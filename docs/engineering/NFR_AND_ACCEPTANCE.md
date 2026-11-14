@@ -57,3 +57,32 @@ The following require product, customer and engineering agreement before being t
 ## 5. Requirement readiness
 
 A requirement is ready for implementation when it has an owner, priority, scope, rationale, measurable acceptance criteria, dependencies, data/security/safety implications and a verification plan. Unresolved assumptions must remain visible rather than hidden in implementation.
+
+## 5. Additional integration and data-governance acceptance scenarios
+
+### Heterogeneous site integration
+Given one site with multiple operational areas using different vendors, protocols and control platforms, MineOS can ingest from each through independent connectors. A failure or schema change in one connector does not silently corrupt or disable unrelated source integrations.
+
+### Source-of-record and MineOS retention
+Given a source measurement, an authorized user can identify the originating system and distinguish it from any MineOS-retained copy or derived result. Configured retention policies are applied by data class, and MineOS does not imply that its copy supersedes the source record.
+
+### Customer-controlled destination
+Given a configured customer-owned destination, an authorized administrator can define the data classes or reports eligible for delivery. Delivery is authenticated, access-scoped, encrypted where supported, observable and auditable; transient failures are retried without creating unintended duplicate deliveries.
+
+### External enterprise integration
+Given an enabled enterprise connector such as a Microsoft Graph integration, only explicitly granted scopes and configured destinations are used. Revoked credentials or permissions cause delivery to fail safely and produce an actionable audit/health event.
+
+### Permissioned future equipment operation
+If a future supervisory-operation capability is separately approved, tests demonstrate that unauthorized users cannot request or approve actions, permitted commands remain subject to the existing control system's interlocks and permissives, and MineOS distinguishes command request, acknowledgement and confirmed execution outcome.
+
+## 6. Additional non-functional requirements
+
+| ID | Category | Baseline requirement |
+|---|---|---|
+| NFR-INT-002 | Heterogeneous integration | Multiple vendor/protocol connectors can coexist within one site without coupling core domain behavior to any single source. |
+| NFR-DAT-002 | Data ownership | Source-of-record identity and lineage remain distinguishable from MineOS copies and derived artifacts. |
+| NFR-DAT-003 | Configurable retention | Retention, export and deletion behavior can be configured by customer, data class and deployment. |
+| NFR-INT-003 | Outbound integration | Customer-controlled destinations use scoped credentials, delivery observability, retry and auditable synchronization. |
+| NFR-SEC-002 | External destination security | Outbound connectors enforce least privilege, tenant/site scope and secure credential handling. |
+
+Targets and exact connector support remain subject to customer and engineering validation.

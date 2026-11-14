@@ -56,3 +56,17 @@ Customer data retention, residency, export, deletion and secondary use must be g
 ## 8. Governance note
 
 This document is a product-level baseline, not a substitute for site-specific hazard studies, legal advice, a formal safety case, OT security architecture or applicable regulatory compliance assessment. Applicable standards and assurance requirements must be identified with qualified specialists for each deployment and jurisdiction.
+
+## 9. Customer data ownership, persistence and external destinations
+
+- Customer operational systems remain authoritative sources of record for data they originate. MineOS is an integration, contextualization and intelligence layer, not a mandatory replacement repository.
+- MineOS may retain selected ingested copies and derived artifacts—including normalized measurements, events, features, analytics, AI outputs and reports—only according to the customer's configured policy, deployment model and applicable agreement.
+- Define retention, residency, export, deletion, backup and recovery behavior by data class and deployment. Do not assume one global retention policy.
+- Outbound connectors to customer-controlled servers and enterprise services must use scoped credentials, least privilege, secure transport, auditable delivery and explicit destination configuration.
+- Customer authorization must govern whether data may be copied to external destinations, including Microsoft 365 services accessed through Microsoft Graph. Connector scopes must be limited to the required resources and actions.
+- Customer data must not be repurposed for shared-model training or unrelated secondary use by default. Any permitted secondary use requires explicit governance and agreement.
+- Data exports and report delivery must enforce the same tenant, site, facility and document-level access boundaries as the originating MineOS information.
+
+## 10. Future supervisory-operation security boundary
+
+A future MineOS interface for operating equipment is exploratory and outside the initial release. If separately approved, it requires action-level authorization, least privilege, strong user identity, explicit target and command validation, customer control-system enforcement of interlocks and permissives, approval policies appropriate to risk, immutable audit records, timeout/failure handling and independent confirmation of execution state. MineOS must not directly bypass or replace the authoritative control and safety layers.

@@ -92,3 +92,27 @@ Define behavior for loss of connectivity, delayed telemetry, duplicated events, 
 - No tenant data leakage through AI prompts, embeddings, caches or observability systems.
 - External integrations must be authenticated, authorized, observable and auditable.
 - Prefer modular services and clear contracts; service decomposition and technology choices remain subject to implementation evaluation.
+
+## 8. Heterogeneous integration and customer-controlled data destinations
+
+A single mine, plant or industrial site may contain many operational areas, each using different equipment, vendors, control systems, protocols, historians and enterprise applications. MineOS must integrate with this heterogeneous environment rather than assume one standardized technology stack.
+
+- Treat each integration as a bounded, replaceable adapter or connector. Protocol-specific behavior must not leak into the core domain model.
+- Support multiple simultaneous source systems within the same site, facility, process area or equipment context.
+- Maintain source-system identity and provenance when information from different systems is normalized and correlated.
+- Distinguish the authoritative source of an operational record from any MineOS copy, normalized representation, cache, feature, event, report or AI output.
+- Customers remain in control of their operational source data and applicable retention policies. MineOS may persist selected ingested copies and derived artifacts when configured and authorized; it is not required to become the sole or permanent system of record.
+- Provide outbound delivery connectors for customer-controlled servers and storage destinations. Delivery must be authenticated, encrypted where supported, observable, retryable and auditable.
+- Support data-class-specific routing and retention so customers can decide which information remains in MineOS and which is delivered to or retained in their own infrastructure.
+- Treat Microsoft Graph as a potential enterprise integration surface for Microsoft 365 destinations and workflows (for example, SharePoint, OneDrive or Teams scenarios). Exact services, scopes, permissions and use cases must be validated before implementation. Microsoft Graph is not an industrial telemetry historian or a substitute for source control systems.
+- Keep report generation separate from report delivery. A generated report may be viewed in MineOS, downloaded, or delivered to an authorized external destination according to customer configuration.
+
+### 8.1 Data-flow responsibilities
+
+1. **Source systems:** remain authoritative for the operational records they originate.
+2. **MineOS ingestion:** acquires data, validates it, preserves source metadata and contextualizes it.
+3. **MineOS processing:** may temporarily buffer and, when configured, persist normalized data and derived intelligence needed for product functions.
+4. **Customer destinations:** may receive selected source copies, curated datasets, reports and derived outputs under customer-defined policy.
+5. **Governance:** defines data ownership, permitted processing, retention, residency, export, deletion and secondary use for each deployment/customer agreement.
+
+The architecture must not assume every customer permits the same data to be retained or sent to the same destination.

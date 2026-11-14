@@ -16,6 +16,9 @@ This register separates decisions explicitly confirmed in product discussions fr
 | DEC-006 | Supervisory control may be considered later, subject to separate requirements and approval. | Confirmed |
 | DEC-007 | Support multiple companies, sites and facilities with different processing operations. | Confirmed |
 | DEC-008 | MineOS is broader than mining alone: mining is the first major industry focus, with coal processing, coke production and other industrial facilities in the wider direction. | Confirmed |
+| DEC-009 | MineOS interfaces with existing operational systems and equipment; it does not manufacture or replace them. A site may contain heterogeneous systems and technologies across different operational areas. | Confirmed |
+| DEC-010 | Customer source systems remain authoritative for the operational data they originate. MineOS may retain configured, policy-approved copies and derived data needed for intelligence, analytics and reporting; it is not required to be the sole or permanent data repository. | Confirmed |
+| DEC-011 | MineOS should support delivering selected data, reports and derived outputs to customer-controlled infrastructure and external enterprise services. Microsoft Graph is an intended integration direction, with exact use cases and scope to be specified. | Confirmed direction; implementation scope open |
 
 ## 2. Proposed architectural implications
 
@@ -27,6 +30,9 @@ These are design recommendations derived from confirmed decisions, not separate 
 - Use process templates as optional accelerators rather than mandatory workflows.
 - Keep industrial connectors replaceable and vendor-neutral.
 - Treat supervisory control as a separately governed future capability.
+- Design for heterogeneous operational technology across areas within the same site; use independent, replaceable source adapters.
+- Preserve customer source-of-record authority while allowing policy-controlled MineOS persistence of selected copies and derived outputs.
+- Make customer-controlled outbound data/report destinations part of the integration architecture; treat Microsoft Graph as an enterprise integration surface, not an industrial historian.
 - Model process topology as a typed, versioned graph separate from the organizational/asset containment hierarchy.
 - Publish immutable, effective-dated configuration versions and preserve their references in analytics and AI outputs.
 - Use template derivation and facility-specific configuration rather than one mandatory process template per industry.
@@ -51,6 +57,10 @@ These are design recommendations derived from confirmed decisions, not separate 
 | OPEN-014 | Which process templates and domain experts are needed for the first pilot routes? | Determines validation coverage and initial configuration UX. |
 | OPEN-015 | What configuration changes require dual approval or formal management-of-change workflows? | Determines configuration governance and audit controls. |
 | OPEN-016 | How should effective-dated corrections trigger historical KPI recomputation and AI feature/model impact assessment? | Needed for reproducible historical analysis. |
+| OPEN-017 | Which customer-controlled storage targets, protocols, formats and synchronization patterns must be supported first? | Determines outbound connector architecture and delivery guarantees. |
+| OPEN-018 | Which Microsoft Graph workloads are in scope (for example, SharePoint document libraries, OneDrive, Teams notifications/files), and what tenant-consent and permission model is required? | Prevents treating Microsoft Graph as one generic storage destination and defines least-privilege scopes. |
+| OPEN-019 | Which data classes may MineOS retain, for how long, and which must remain only in customer infrastructure? | Determines storage, caching, reporting, AI history and deletion behavior. |
+| OPEN-020 | What exact equipment operations, if any, should be considered for a future permissioned MineOS supervisory interface? | Defines a separately governed future scope; no real-equipment command capability is approved for the initial release. |
 
 ## 4. Decision change process
 

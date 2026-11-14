@@ -1,7 +1,7 @@
 # MineOS Product Requirements
 
 **Status:** Initial baseline — review required  
-**Version:** 0.3
+**Version:** 0.4
 
 ## 1. Product vision
 
@@ -22,10 +22,11 @@ MineOS complements rather than replaces systems that directly operate or protect
 
 ## 3. Product principles
 
-- Vendor-neutral and integration-first.
+- Vendor-neutral and integration-first across heterogeneous operational areas, vendors, protocols and technology generations.
 - Configurable rather than hardcoded to one commodity, mine, plant or process route.
 - Multi-company and multi-site by design, with strict tenant isolation.
 - Deployment-neutral architecture and support for constrained or disconnected industrial environments.
+- Customer ownership of operational source data, with configurable retention and customer-controlled data destinations.
 - Human accountability for consequential operational decisions.
 - Explainable, uncertainty-aware and traceable AI outputs.
 - Globalization and data governance designed in from the beginning.
@@ -90,6 +91,12 @@ Priorities are proposals for planning: P0 foundational, P1 important early capab
 - **DAT-005 (P1):** Support buffering, retry, synchronization and controlled operation during intermittent connectivity.
 - **DAT-006 (P1):** Provide connector health, ingestion observability and data-quality reporting.
 - **DAT-007 (P2):** Expand connector coverage according to customer and industry priorities.
+- **DAT-008 (P0):** Support multiple independent systems, vendors, protocols and equipment technologies within one site or facility; do not assume a single vendor stack or uniform technology across operational areas.
+- **DAT-009 (P0):** Preserve the distinction between customer source systems of record and MineOS-managed copies, normalized data and derived outputs; retain source provenance throughout ingestion and transformation.
+- **DAT-010 (P0):** Make MineOS retention of ingested copies and derived data configurable by customer, data class, deployment and applicable policy, including retention, export and deletion controls.
+- **DAT-011 (P1):** Support configurable delivery/export destinations, including customer-controlled servers and storage environments, through secure, replaceable connectors and documented interfaces.
+- **DAT-012 (P1):** Track delivery status, retries, idempotency, destination errors and synchronization state for outbound data and report delivery.
+- **DAT-013 (P1):** Allow deployment and data-flow policies to keep selected data, reports or derived artifacts within customer-controlled infrastructure where required.
 
 ### 6.3 Operational monitoring and analytics
 - **OPS-001 (P0):** Provide facility- and asset-aware operational monitoring.
@@ -126,6 +133,7 @@ Priorities are proposals for planning: P0 foundational, P1 important early capab
 
 ### 6.7 Reporting and global operations
 - **RPT-001 (P1):** Generate configurable operational, maintenance, production and management reports.
+- **RPT-002 (P1):** Allow authorized users to export or deliver reports and selected MineOS outputs to configured customer-controlled destinations, with access controls, delivery audit and configurable schedules where supported.
 - **GLB-001 (P0):** Store timestamps with unambiguous time-zone context and display them in configured local time.
 - **GLB-002 (P0):** Support metric and imperial units and configurable engineering units, with explicit conversions.
 - **GLB-003 (P1):** Support site-specific shifts, calendars and operating-day definitions.
@@ -161,6 +169,12 @@ Roles are not mutually exclusive. Authorization must be configurable and scoped 
 - Bypassing or modifying safety interlocks, emergency stops or safety instrumented functions.
 - Unreviewed AI actions that directly alter physical processes.
 - Assuming every customer has identical equipment, process topology or operating procedures.
+
+### 6.10 Future permissioned supervisory operations
+- **CTL-001 (P2, exploratory):** Evaluate a permissioned supervisory-operation interface for explicitly supported equipment and control-system integrations. This is not part of the initial release and must not be treated as approved implementation scope.
+- **CTL-002 (P0 prerequisite if CTL-001 is ever approved):** Enforce fine-grained authorization by tenant, site, facility, operational area, equipment, action and user role, with least-privilege service identities and auditable approvals.
+- **CTL-003 (P0 prerequisite if CTL-001 is ever approved):** Route any permitted command through the customer's authoritative control system and its existing interlocks, permissives, limits and safety functions. MineOS must never bypass PLC, SCADA/DCS or SIS protections.
+- **CTL-004 (P0 prerequisite if CTL-001 is ever approved):** Record command intent, requesting identity, authorization decision, approval, target, timestamp, response and independently observed execution outcome. A request or acknowledgement must not be misrepresented as confirmed physical execution.
 
 ## 10. Requirement traceability
 

@@ -7,7 +7,9 @@ Mining is the first major industry focus. The platform is designed to support di
 MineOS is an intelligence and integration layer—not a replacement for PLC, SCADA, DCS, SIS, historians, ERP or CMMS systems.
 
 ## Product principles
-- Vendor-neutral integration with existing systems.
+- Vendor-neutral integration with heterogeneous systems and equipment across every operational area.
+- Customer control of operational source data, with configurable MineOS retention of permitted copies and derived intelligence.
+- Delivery of reports and approved outputs to customer-controlled storage and enterprise services.
 - Support open-pit, underground, processing and beneficiation operations.
 - Extensible to industrial facilities with different process configurations.
 - Multiple companies, sites and plants with strict tenant isolation.
@@ -28,6 +30,9 @@ MineOS is an intelligence and integration layer—not a replacement for PLC, SCA
 
 ## Status
 This is the initial requirements baseline captured from product discussions. Confirmed decisions are distinguished from proposals and unresolved questions. It does not claim that documented capabilities are already implemented.
+
+## Data ownership and persistence
+Customer operational systems remain authoritative sources of record. MineOS ingests and contextualizes data and may retain selected copies, normalized records, events, features, reports and AI outputs according to customer policy and deployment configuration. Customers may choose approved customer-controlled storage destinations; MineOS is not required to be the sole or permanent repository for customer data.
 
 ## Initial operational boundary
 MineOS initially observes, analyzes, predicts and recommends. Existing control and safety systems remain authoritative for equipment protection, interlocks, emergency stops and safety instrumented functions. MineOS does not autonomously command real equipment in the initial scope.

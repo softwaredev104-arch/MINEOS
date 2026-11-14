@@ -81,3 +81,11 @@ Key domain constraints:
 - Draft configurations may be incomplete; publication applies a selected validation profile and blocks configured critical errors.
 
 The process configuration engine does not replace the asset registry, industrial control system or safety system. It contextualizes assets and measurements for operational intelligence.
+
+## Heterogeneous operational technology context
+
+A facility may contain multiple process areas and operational systems that perform different tasks and use different equipment manufacturers, protocols, control platforms and historians. The domain model must represent operational areas and process relationships independently of the technology used to monitor or control them.
+
+An asset or measurement may have multiple source-system identities or bindings over time. Preserve source identity, source timestamps, quality semantics and connector provenance rather than treating a vendor tag name as a globally unique domain identity. Integration configuration belongs at the boundary between the canonical domain model and source-specific adapters.
+
+The customer source system remains authoritative for records it originates. MineOS may maintain policy-approved copies and derived records, but those copies must retain lineage to the originating source and must not silently become the authoritative record.
