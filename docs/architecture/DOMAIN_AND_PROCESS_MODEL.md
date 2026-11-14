@@ -64,3 +64,20 @@ Do not compare KPIs across sites unless definitions, units, boundaries and data 
 ## 9. Data isolation
 
 Every domain object and relationship must be scoped to a tenant. Cross-site relationships must remain within authorized organization boundaries. AI feature generation, retrieval and reporting must preserve the same access scope.
+
+
+## 10. Process configuration engine
+
+The Process Configuration Engine is the governed mechanism for creating, validating, versioning and publishing facility-specific process models. Its detailed specification is maintained in [PROCESS_CONFIGURATION_ENGINE.md](PROCESS_CONFIGURATION_ENGINE.md).
+
+Key domain constraints:
+- A facility may contain multiple process graphs and shared utility systems.
+- Process topology is a typed graph, not merely the organizational containment tree.
+- Containment, material/energy/water flow, equipment function and measurement association are distinct relationship types.
+- Parallel, optional and recirculating routes must be represented explicitly; cycles require applicable process-rule validation.
+- Facility templates are versioned starting points that can be customized independently.
+- Published configurations are immutable snapshots with effective dates and audit metadata.
+- Historical analytics and AI outputs must retain the configuration version used.
+- Draft configurations may be incomplete; publication applies a selected validation profile and blocks configured critical errors.
+
+The process configuration engine does not replace the asset registry, industrial control system or safety system. It contextualizes assets and measurements for operational intelligence.

@@ -27,8 +27,11 @@ These are design recommendations derived from confirmed decisions, not separate 
 - Use process templates as optional accelerators rather than mandatory workflows.
 - Keep industrial connectors replaceable and vendor-neutral.
 - Treat supervisory control as a separately governed future capability.
+- Model process topology as a typed, versioned graph separate from the organizational/asset containment hierarchy.
+- Publish immutable, effective-dated configuration versions and preserve their references in analytics and AI outputs.
+- Use template derivation and facility-specific configuration rather than one mandatory process template per industry.
 
-## 3. Open product decisions
+## 3. Open product and architecture decisions
 
 | ID | Question | Why it matters |
 |---|---|---|
@@ -44,6 +47,10 @@ These are design recommendations derived from confirmed decisions, not separate 
 | OPEN-010 | What are required availability, latency, throughput, RTO and RPO targets? | Needed before service-level commitments. |
 | OPEN-011 | What commercial packaging and licensing model should be used for SaaS and dedicated deployments? | Determines provisioning, metering and entitlement design. |
 | OPEN-012 | What governance and validation process is required before any future supervisory-control capability? | Safety-critical future scope. |
+| OPEN-013 | Should process topology be persisted as relational typed-edge tables, a graph database or a hybrid? | Decide from query patterns, transaction consistency, scale and operational complexity. |
+| OPEN-014 | Which process templates and domain experts are needed for the first pilot routes? | Determines validation coverage and initial configuration UX. |
+| OPEN-015 | What configuration changes require dual approval or formal management-of-change workflows? | Determines configuration governance and audit controls. |
+| OPEN-016 | How should effective-dated corrections trigger historical KPI recomputation and AI feature/model impact assessment? | Needed for reproducible historical analysis. |
 
 ## 4. Decision change process
 

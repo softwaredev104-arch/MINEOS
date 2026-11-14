@@ -20,6 +20,7 @@ MineOS is an intelligence and integration layer—not a replacement for PLC, SCA
 - [Product requirements](docs/product/PRODUCT_REQUIREMENTS.md)
 - [Reference architecture](docs/architecture/REFERENCE_ARCHITECTURE.md)
 - [Domain and process model](docs/architecture/DOMAIN_AND_PROCESS_MODEL.md)
+- [Process Configuration Engine](docs/architecture/PROCESS_CONFIGURATION_ENGINE.md)
 - [MineOS AI architecture](docs/architecture/MINEOS_AI_ARCHITECTURE.md)
 - [Safety, security and AI governance](docs/governance/SAFETY_SECURITY_AI_GOVERNANCE.md)
 - [Non-functional requirements and acceptance](docs/engineering/NFR_AND_ACCEPTANCE.md)

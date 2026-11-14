@@ -167,3 +167,21 @@ Roles are not mutually exclusive. Authorization must be configurable and scoped 
 Every requirement entering an implementation milestone should have a unique ID, description, rationale, priority, release target, testable acceptance criteria, dependencies, applicable deployment/industry scope, verification method, status, owner and change history.
 
 The priorities in this baseline are planning proposals, not contractual commitments. Detailed acceptance criteria and release sequencing remain to be completed with product and customer input.
+
+
+### 6.9 Process configuration engine
+- **CFG-001 (P0):** Model facility process topology using configurable typed nodes and relationships rather than a fixed universal process sequence.
+- **CFG-002 (P0):** Support multiple independent process graphs within a facility and multiple facilities within a tenant.
+- **CFG-003 (P0):** Represent process areas, units/stages, assets, streams, storage, source/sink boundaries and shared utilities as appropriate.
+- **CFG-004 (P0):** Distinguish containment, process flow, asset-function and measurement-association relationships.
+- **CFG-005 (P0):** Bind source-system tags to canonical measurement concepts while preserving source identity, units, timestamps and quality semantics.
+- **CFG-006 (P1):** Support material, energy, water, gas and utility streams with optional typed properties relevant to each stream.
+- **CFG-007 (P1):** Support parallel, optional, bypass and explicitly permitted recirculating process routes.
+- **CFG-008 (P1):** Provide configurable validation rules with blocking errors and reviewable warnings before publication.
+- **CFG-009 (P1):** Provide versioned templates that can be derived and customized without imposing a universal process route.
+- **CFG-010 (P0):** Maintain immutable published configuration versions with draft, validation, review, approval, publication and retirement states.
+- **CFG-011 (P0):** Preserve effective dates and configuration-version references for historical telemetry interpretation, KPI results and AI inference provenance.
+- **CFG-012 (P0):** Enforce tenant/site/facility-scoped authorization and audit all material configuration changes and lifecycle transitions.
+- **CFG-013 (P1):** Version KPI definitions with formula, scope, unit, aggregation, exclusions and source dependencies.
+- **CFG-014 (P1):** Expose versioned configuration contracts to ingestion, monitoring, analytics, AI, simulation and reporting services.
+- **CFG-015 (P2):** Support controlled template upgrades with diffs, compatibility checks and explicit approval.
