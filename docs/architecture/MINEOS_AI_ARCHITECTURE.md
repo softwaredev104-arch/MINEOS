@@ -1,0 +1,73 @@
+# MineOS AI Architecture
+
+**Status:** Proposed AI architecture — review required
+
+## 1. Role of MineOS AI
+
+MineOS AI is the intelligence subsystem of MineOS. It consumes governed operational context and provides detection, forecasting, diagnosis assistance, prediction and recommendations. It does not own industrial safety authority and does not directly control real equipment in the initial scope.
+
+## 2. Intelligence capabilities
+
+### Statistical and rules-based intelligence
+Engineering limits, process constraints, deterministic calculations, statistical process monitoring and domain consistency checks such as mass/energy balance where data supports them.
+
+### Classical machine learning
+Candidate methods include tree ensembles, gradient boosting, anomaly detection, clustering and classification. Model choice must be justified against baselines and operational data quality.
+
+### Deep learning and time-series models
+Candidate methods include MLPs, CNNs, LSTM/GRU, temporal convolution, transformers, autoencoders and suitable time-series foundation models. These are options, not mandatory technology choices.
+
+### Process-aware and physics-informed intelligence
+Combine learned models with engineering limits, process topology, conservation relationships and domain constraints when valid. A model must not be described as physics-informed unless those constraints are actually represented and evaluated.
+
+### Simulation and digital twins
+Use configurable simulators and digital-twin models for scenario testing, synthetic data, workflow validation and safe optimization research. Clearly label simulated data and results; synthetic training performance is not proof of real-site performance.
+
+## 3. Initial AI use cases
+
+- Anomaly detection.
+- Equipment health estimation.
+- Predictive maintenance and failure-risk forecasting.
+- Production and process-variable forecasting.
+- Energy and water forecasting/analytics where relevant.
+- Event correlation and root-cause investigation assistance.
+- Bottleneck and performance-deviation detection.
+- Shift and daily operational summaries.
+- Evidence-grounded operational copilot.
+
+Prioritize use cases according to available data, measurable customer value, risk and validation feasibility.
+
+## 4. Data strategy
+
+Use distinct data categories:
+1. Public benchmark datasets for method development and reproducible experimentation.
+2. MineOS synthetic simulation data for schema, process relationships, controlled scenarios, fault injection and simulation testing.
+3. Customer operational data only when lawfully and contractually authorized.
+
+Public datasets must not be described as mine-specific unless provenance supports that claim. Synthetic and public benchmark results must be distinguished from customer-site validation.
+
+## 5. Prediction-to-outcome lifecycle
+
+Governed operational data → context and feature generation → model inference/deterministic analysis → prediction with uncertainty and evidence → separate recommendation → human review and approval → customer-controlled action outside MineOS → outcome and feedback capture → evaluation and governed model update.
+
+A recommendation is not an approval. An approval is not proof that an action was executed. An executed action and its outcome must be recorded separately.
+
+## 6. Model governance
+
+For each production model, record model identity/version/artifact provenance, training data lineage and permitted use, feature definitions and schema versions, evaluation datasets/metrics/limitations, intended and excluded use, operating envelope, inference timestamp, model version, relevant input context, uncertainty and explanation metadata, monitoring, review owner and rollback path.
+
+Require validation before promotion. Monitor performance and data drift. Retraining must be governed; feedback must not automatically alter a production model without evaluation and approval.
+
+## 7. Tenant-aware AI
+
+Tenant and user authorization must be enforced before retrieval, feature access, inference and result delivery. Embeddings, vector stores, caches, training datasets, prompts, logs and model evaluation must not create cross-tenant leakage. Customer data use for shared model training requires explicit policy and authorization; it must not be assumed.
+
+## 8. Research and prototype boundary
+
+Notebook/Colab environments are for research, simulation and prototyping—not production runtime. Mature code should be extracted into tested packages and deployable services, with versioned APIs and appropriate edge/cloud inference options.
+
+Potential API capability families include anomaly detection, equipment health, maintenance risk, production forecasting, event analysis, root-cause assistance and report generation. Exact routes and contracts belong in API specifications.
+
+## 9. Optimization and reinforcement learning
+
+Optimization and reinforcement learning are research capabilities. Initial experimentation must use simulation, synthetic scenarios or approved offline datasets. Any future proposal involving real equipment or operational setpoints requires separate safety, cybersecurity, validation, authorization and change-management review. Direct real-equipment RL control is not in the initial scope.
