@@ -90,3 +90,9 @@ Optimization and reinforcement learning are research capabilities. Initial exper
 - Require human review for consequential maintenance recommendations; the model does not approve or perform maintenance.
 
 The detailed dataset, feature, maintenance-event, evaluation and model-promotion requirements are maintained in the PDM strategy document.
+
+## 11. Reusable model engineering and ONNX
+
+MineOS adopts a reuse-first, CPU-first model-engineering lifecycle with versioned datasets, feature contracts, baseline-first model selection, leakage-aware evaluation, immutable artifacts, and governed promotion. ONNX is the preferred interchange path only when the selected model can be exported without behavioral loss and passes runtime parity checks; it is not a requirement for every algorithm or a training framework.
+
+See [Reusable Model Engineering and ONNX Standard](../ai/REUSABLE_MODEL_ENGINEERING_AND_ONNX_STANDARD.md) for candidate open-source tooling, licence review, model/feature versioning, ONNX export gates, CPU benchmarking, tenant isolation, model lifecycle and the per-model release checklist. Apply it together with the PDM strategy and connector/governance requirements; it does not supersede those domain-specific controls.
