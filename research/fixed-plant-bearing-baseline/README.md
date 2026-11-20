@@ -46,7 +46,7 @@ python -m pip install -e '.[test,onnx]'
 1. Obtain the appropriate files from the official CWRU Bearing Data Center, subject to its terms.
 2. Place the `.mat` files under `data/cwru/` (or another local directory outside source control).
 3. Copy `data/cwru/manifest.example.csv` to `manifest.csv` and edit it to match the files actually obtained.
-4. Use the correct `sample_rate_hz` for each file (the source includes both 12 kHz and 48 kHz data groups).
+4. Use the correct `sample_rate_hz` for each file (the source includes both 12 kHz and 48 kHz data groups). One training run must use a single sampling rate; build separate 12 kHz and 48 kHz cohorts rather than mixing them.
 5. Assign group IDs that reflect the independent acquisition unit intended for holdout. Do not claim unseen-bearing validation if the IDs are only filenames.
 6. Confirm labels from the source's experiment documentation; do not rely on automatic filename guesses.
 
