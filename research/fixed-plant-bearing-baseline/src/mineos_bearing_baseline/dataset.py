@@ -22,6 +22,7 @@ class DatasetBundle:
     groups: np.ndarray
     recording_ids: np.ndarray
     feature_names: tuple[str, ...] = FEATURE_NAMES
+    sample_rate_hz: float | None = None
 
 
 def _read_manifest(root: Path) -> list[dict[str, str]]:
@@ -121,6 +122,13 @@ def load_dataset(
 
     root_path = Path(root).resolve()
     rows = _read_manifest(root_path)
+    sample_rates = {float(row["sample_rate_hz"]) for row in rows}
+    if len(sample_rates) != 1:
+        raise ValueError(
+            "All recordings in one baseline run must use the same sample_rate_hz; "
+            "build separate cohorts for 12 kHz and 48 kHz recordings"
+        )
+    sample_rate_hz = next(iter(sample_rates))
     feature_rows: list[np.ndarray] = []
     labels: list[str] = []
     groups: list[str] = []
@@ -149,4 +157,5 @@ def load_dataset(
         y=np.asarray(labels, dtype=str),
         groups=np.asarray(groups, dtype=str),
         recording_ids=np.asarray(recording_ids, dtype=str),
+        sample_rate_hz=sample_rate_hz,
     )
