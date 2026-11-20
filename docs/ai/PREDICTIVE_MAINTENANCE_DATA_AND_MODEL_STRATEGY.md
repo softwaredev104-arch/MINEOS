@@ -281,3 +281,13 @@ Do not emit a precise failure date unless the model and evidence support that le
 - No RUL output where there is insufficient degradation history, failure/censoring evidence or a valid operating envelope.
 - No shared-model training on customer data without explicit authorization.
 - No automatic work-order creation or maintenance execution without a separately approved workflow and customer permissions.
+
+## 14. Initial fixed-plant bearing reference pilot
+
+A research-only reference implementation now exists at [research/fixed-plant-bearing-baseline](../../research/fixed-plant-bearing-baseline/README.md). It provides a MATLAB vibration loader, deterministic time/spectral features, a class-balanced logistic-regression baseline, grouped cross-validation, model-card/metrics output and optional ONNX export with ONNX Runtime CPU label-parity checking.
+
+The first task is **bearing fault classification** (normal, inner race, rolling element/ball and outer race), not failure-risk forecasting or remaining-useful-life estimation. The initial public source under evaluation is the CWRU Bearing Data Center. Its files are not included in the repository; the official download page does not state a dataset licence, so verify current terms and obtain permission where necessary before commercial use or redistribution. The source describes laboratory recordings with seeded defects and 12 kHz / 48 kHz acquisition rates. These data are useful for an initial diagnostic pipeline exercise but do not validate MineOS for mine-site operating conditions.
+
+The pilot uses synthetic MATLAB recordings in its automated tests so the code path can be verified without redistributing external data. It uses StratifiedGroupKFold over manifest-provided group IDs and fails when fewer than two independent groups per class are available. Its validation claim is only as strong as the supplied grouping; filename-level groups do not establish unseen-bearing generalization.
+
+No customer connector, real-site dataset, production inference endpoint, RUL model or operational recommendation workflow is implemented by this pilot. The code, evaluation report and ONNX artifact remain research outputs until the model-specific MineOS release gates and customer/domain approvals are met.
