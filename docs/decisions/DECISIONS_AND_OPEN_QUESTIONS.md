@@ -36,6 +36,12 @@ These are design recommendations derived from confirmed decisions, not separate 
 - Model process topology as a typed, versioned graph separate from the organizational/asset containment hierarchy.
 - Publish immutable, effective-dated configuration versions and preserve their references in analytics and AI outputs.
 - Use template derivation and facility-specific configuration rather than one mandatory process template per industry.
+- Implement industrial data access through capability-declared, replaceable adapters; use standard protocols and vendor APIs without coupling the AI model to source-vendor schemas.
+- Treat public API documentation, customer authorization, product licensing and live connector support as separate facts.
+- Prioritize OPC UA, MQTT/Sparkplug B and authenticated REST/GraphQL integration surfaces for early connector research; AEMP 2.0 is a distinct fleet-telemetry integration family.
+- Separate fixed-plant condition monitoring and mobile-fleet telematics from a data/feature perspective.
+- Require maintenance outcomes and verification data for PDM model evaluation; public benchmark and synthetic performance is not mine-site validation.
+- Keep initial industrial connector operations read-oriented and block equipment-control writes.
 
 ## 3. Open product and architecture decisions
 
@@ -48,7 +54,7 @@ These are design recommendations derived from confirmed decisions, not separate 
 | OPEN-005 | Which identity providers and enterprise authentication methods are required? | Determines identity integration and access policy. |
 | OPEN-006 | What are data retention, residency, sovereignty and deletion requirements by customer/region? | Determines deployment and data lifecycle design. |
 | OPEN-007 | Which languages and localization requirements are launch priorities? | Determines user experience and translation scope. |
-| OPEN-008 | Which ERP, CMMS, MES, laboratory and enterprise integrations are highest priority? | Determines business workflow integration. |
+| OPEN-008 | Which ERP, CMMS, MES, laboratory and enterprise integrations are highest priority? | Determines integration roadmap and business workflow integration. |
 | OPEN-009 | What mobile workflows are required, and which must work offline? | Determines mobile and edge scope. |
 | OPEN-010 | What are required availability, latency, throughput, RTO and RPO targets? | Needed before service-level commitments. |
 | OPEN-011 | What commercial packaging and licensing model should be used for SaaS and dedicated deployments? | Determines provisioning, metering and entitlement design. |
@@ -61,6 +67,16 @@ These are design recommendations derived from confirmed decisions, not separate 
 | OPEN-018 | Which Microsoft Graph workloads are in scope (for example, SharePoint document libraries, OneDrive, Teams notifications/files), and what tenant-consent and permission model is required? | Prevents treating Microsoft Graph as one generic storage destination and defines least-privilege scopes. |
 | OPEN-019 | Which data classes may MineOS retain, for how long, and which must remain only in customer infrastructure? | Determines storage, caching, reporting, AI history and deletion behavior. |
 | OPEN-020 | What exact equipment operations, if any, should be considered for a future permissioned MineOS supervisory interface? | Defines a separately governed future scope; no real-equipment command capability is approved for the initial release. |
+| OPEN-021 | Which edge runtime, packaging model and deployment pattern should host the first MineOS industrial connectors? | Determines on-premises installation, patching, buffering, monitoring and customer OT compatibility. |
+| OPEN-022 | Which OPC UA security policies, certificate lifecycle and read-only namespace/node permission model are required for the first release? | Prevents unsafe or incompatible OT connectivity and defines certificate operations. |
+| OPEN-023 | Which MQTT broker implementations and Sparkplug B versions/profiles must be supported initially? | Defines topic, payload, birth/death, state and reconnect behavior. |
+| OPEN-024 | Which vendors/products and exact software versions are present in the first pilot environment, and what interfaces are licensed/enabled? | Converts public research into testable customer-specific connector scope. |
+| OPEN-025 | Which fixed-plant and mobile-fleet asset classes should anchor the first PDM reference models? | Constrains initial features, datasets, maintenance labels and engineering validation. |
+| OPEN-026 | Which failure taxonomy, maintenance codes and completed-work fields can the pilot CMMS/EAM supply? | Determines whether model outcomes can be evaluated as verified failures, repairs, inspections or false alerts. |
+| OPEN-027 | What are the minimum signal frequency, history retention, allowable data latency and approved waveform/feature access for each PDM use case? | Determines whether the source can support anomaly detection, fault diagnosis, failure-risk horizons or RUL. |
+| OPEN-028 | Which validation gates, alert budgets, false-alarm tolerance, lead-time targets and human review roles are acceptable for each pilot use case? | Establishes safe, measurable criteria before PDM models influence maintenance decisions. |
+| OPEN-029 | Which source records may be used for customer-specific model training, model improvement or cross-customer research, and what explicit consent is required? | Protects customer data ownership, confidentiality and tenant isolation. |
+| OPEN-030 | What evidence is required before a vendor connector may be labelled supported (simulator contract tests, licensed test instance, site acceptance, version matrix)? | Prevents a research listing or mock-server pass from being mistaken for production interoperability. |
 
 ## 4. Decision change process
 
