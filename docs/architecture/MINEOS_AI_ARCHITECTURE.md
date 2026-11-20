@@ -46,6 +46,10 @@ Use distinct data categories:
 
 Public datasets must not be described as mine-specific unless provenance supports that claim. Synthetic and public benchmark results must be distinguished from customer-site validation.
 
+For predictive maintenance, preserve the distinction between high-frequency condition data, ordinary process telemetry, low-frequency fleet utilization, and maintenance outcome records. Fixed-plant and mobile-fleet models may share platform services but should have separate feature contracts and validation plans where their signals and failure mechanisms differ.
+
+See [Predictive Maintenance Data and Model Strategy](../ai/PREDICTIVE_MAINTENANCE_DATA_AND_MODEL_STRATEGY.md) for canonical data contracts, public research datasets, candidate model families, leakage-aware evaluation, maintenance feedback and promotion gates.
+
 ## 5. Prediction-to-outcome lifecycle
 
 Governed operational data → context and feature generation → model inference/deterministic analysis → prediction with uncertainty and evidence → separate recommendation → human review and approval → customer-controlled action outside MineOS → outcome and feedback capture → evaluation and governed model update.
@@ -71,3 +75,18 @@ Potential API capability families include anomaly detection, equipment health, m
 ## 9. Optimization and reinforcement learning
 
 Optimization and reinforcement learning are research capabilities. Initial experimentation must use simulation, synthetic scenarios or approved offline datasets. Any future proposal involving real equipment or operational setpoints requires separate safety, cybersecurity, validation, authorization and change-management review. Direct real-equipment RL control is not in the initial scope.
+
+## 10. Predictive-maintenance implementation direction
+
+- Treat PDM as a family of asset- and task-specific models, not one universal model for every machine.
+- Establish transparent engineering/statistical baselines before adopting more complex deep-learning models.
+- Distinguish anomaly detection, fault classification, horizon-specific failure risk and remaining-useful-life (RUL) estimation. They require different labels, assumptions and evaluation.
+- Join sensor/condition measurements with operating mode, duty/load context, asset/component identity and verified maintenance outcomes.
+- Preserve raw source signals or source-derived features with source time, ingestion time, units, quality and lineage.
+- Do not infer a failure solely from a shutdown, alarm or work-order closure.
+- Use temporal, asset and (where possible) site holdouts to reduce data leakage and measure generalization.
+- Evaluate calibration, false-alert burden, missed failures and lead time alongside conventional model metrics.
+- Run prospective shadow evaluation before operational promotion.
+- Require human review for consequential maintenance recommendations; the model does not approve or perform maintenance.
+
+The detailed dataset, feature, maintenance-event, evaluation and model-promotion requirements are maintained in the PDM strategy document.
