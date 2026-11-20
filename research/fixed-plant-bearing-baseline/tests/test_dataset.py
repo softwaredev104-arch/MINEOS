@@ -53,9 +53,9 @@ def test_unknown_label_is_rejected(tmp_path):
 def test_mixed_sample_rates_are_rejected(tmp_path):
     manifest = tmp_path / "manifest.csv"
     manifest.write_text(
-        "recording_id,filename,label,sample_rate_hz,group_id\\n"
-        "normal_a,a.mat,normal,12000,g1\\n"
-        "normal_b,b.mat,normal,48000,g2\\n",
+        "recording_id,filename,label,sample_rate_hz,group_id\n"
+        "normal_a,a.mat,normal,12000,g1\n"
+        "normal_b,b.mat,normal,48000,g2\n",
         encoding="utf-8",
     )
     with pytest.raises(ValueError, match="same sample_rate_hz"):
