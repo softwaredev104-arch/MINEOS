@@ -1,0 +1,9 @@
+recording_id,filename,label,sample_rate_hz,group_id
+normal_load0,Normal_0.mat,normal,12000,normal_load0
+normal_load1,Normal_1.mat,normal,12000,normal_load1
+inner_007_load0,IR007_0.mat,inner_race,12000,inner_007_load0
+inner_007_load1,IR007_1.mat,inner_race,12000,inner_007_load1
+ball_007_load0,B007_0.mat,ball,12000,ball_007_load0
+ball_007_load1,B007_1.mat,ball,12000,ball_007_load1
+outer_007_load0,OR007@6_0.mat,outer_race,12000,outer_007_load0
+outer_007_load1,OR007@6_1.mat,outer_race,12000,outer_007_load1
