@@ -17,19 +17,32 @@ MineOS is an intelligence and integration layer—not a replacement for PLC, SCA
 - Cloud, on-premises and hybrid deployment.
 - Human-approved decision workflows and evidence-led AI.
 - Global readiness for units, time zones, calendars, localization and data residency.
+- Replaceable industrial adapters for protocols, vendor APIs, historians, OEM telematics and maintenance systems.
+- Predictive-maintenance models must be validated against representative operating data and verified maintenance outcomes before operational promotion.
 
 ## Documentation
+
+### Product and domain
 - [Product requirements](docs/product/PRODUCT_REQUIREMENTS.md)
-- [Reference architecture](docs/architecture/REFERENCE_ARCHITECTURE.md)
 - [Domain and process model](docs/architecture/DOMAIN_AND_PROCESS_MODEL.md)
 - [Process Configuration Engine](docs/architecture/PROCESS_CONFIGURATION_ENGINE.md)
+
+### Architecture and integrations
+- [Reference architecture](docs/architecture/REFERENCE_ARCHITECTURE.md)
+- [Industrial connector architecture](docs/architecture/INDUSTRIAL_CONNECTOR_ARCHITECTURE.md)
+- [Industrial vendor and API research register](docs/integrations/INDUSTRIAL_VENDOR_API_REGISTRY.md)
+
+### AI and governance
 - [MineOS AI architecture](docs/architecture/MINEOS_AI_ARCHITECTURE.md)
+- [Predictive maintenance data and model strategy](docs/ai/PREDICTIVE_MAINTENANCE_DATA_AND_MODEL_STRATEGY.md)
 - [Safety, security and AI governance](docs/governance/SAFETY_SECURITY_AI_GOVERNANCE.md)
+
+### Engineering and decisions
 - [Non-functional requirements and acceptance](docs/engineering/NFR_AND_ACCEPTANCE.md)
 - [Decisions and open questions](docs/decisions/DECISIONS_AND_OPEN_QUESTIONS.md)
 
 ## Status
-This is the initial requirements baseline captured from product discussions. Confirmed decisions are distinguished from proposals and unresolved questions. It does not claim that documented capabilities are already implemented.
+The repository contains a product requirements baseline, proposed architecture, governance rules and a public-documentation research baseline for industrial vendor interfaces and predictive maintenance. Confirmed decisions are distinguished from proposals and unresolved questions. Documentation of a vendor interface does not mean a MineOS connector has been implemented, tested against a live system, commercially licensed or approved by a customer.
 
 ## Data ownership and persistence
 Customer operational systems remain authoritative sources of record. MineOS ingests and contextualizes data and may retain selected copies, normalized records, events, features, reports and AI outputs according to customer policy and deployment configuration. Customers may choose approved customer-controlled storage destinations; MineOS is not required to be the sole or permanent repository for customer data.
