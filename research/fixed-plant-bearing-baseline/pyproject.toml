@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mineos-bearing-baseline"
+version = "0.1.0"
+description = "Research-only, CPU-first bearing fault classification baseline for MineOS"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [{ name = "MineOS Engineering" }]
+dependencies = [
+  "numpy>=1.24,<3",
+  "scipy>=1.10,<2",
+  "scikit-learn>=1.3,<2",
+  "joblib>=1.3,<2",
+]
+
+[project.optional-dependencies]
+onnx = ["skl2onnx>=1.16,<2", "onnxruntime>=1.17,<2"]
+test = ["pytest>=8,<9"]
+
+[project.scripts]
+mineos-bearing-baseline = "mineos_bearing_baseline.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
