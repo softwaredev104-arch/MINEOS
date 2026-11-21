@@ -8,6 +8,7 @@ import pandas as pd
 import pytest
 
 from mineos_bearing_baseline.library_dataset import load_standardized_dataset
+from mineos_bearing_baseline.features import FEATURE_NAMES
 
 
 class FakeDataset:
@@ -70,7 +71,7 @@ def test_standardized_bridge_builds_grouped_feature_bundle(tmp_path, monkeypatch
         window_size=2048,
         stride=2048,
     )
-    assert bundle.X.shape == (16, 16)
+    assert bundle.X.shape == (16, len(FEATURE_NAMES))
     assert set(bundle.y) == {"normal", "inner_race", "outer_race", "ball"}
     assert bundle.sample_rate_hz == 12000
     assert len(set(bundle.groups[bundle.y == "normal"])) == 2
@@ -122,7 +123,7 @@ def test_cwru_de_channel_excludes_faults_on_fe_bearing(tmp_path, monkeypatch):
         window_size=2048,
         stride=2048,
     )
-    assert bundle.X.shape == (16, 16)
+    assert bundle.X.shape == (16, len(FEATURE_NAMES))
     assert "rec8" not in set(bundle.recording_ids)
     assert source["fault_location_filter"] == "motor_bearing_de"
     assert source["excluded_nonmatching_fault_location_signals"] == 1
