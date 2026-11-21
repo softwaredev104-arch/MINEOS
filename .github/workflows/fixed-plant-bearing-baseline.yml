@@ -159,11 +159,55 @@ jobs:
           python-version: '3.11'
           cache: pip
           cache-dependency-path: research/fixed-plant-bearing-baseline/pyproject.toml
-      - name: Install libarchive extractor for the source RAR5 volumes
+      - name: Install LGPL Unarchiver for multi-volume RAR5 source files
         run: |
           sudo apt-get update
-          sudo apt-get install -y libarchive-tools
-          bsdtar --version
+          sudo apt-get install -y unar
+          unar -v
+          lsar -v
+          sudo tee /usr/local/bin/unrar >/dev/null <<'PY'
+          #!/usr/bin/env python3
+          import json
+          import subprocess
+          import sys
+
+          args = sys.argv[1:]
+          if not args:
+              raise SystemExit("unrar compatibility shim requires a command")
+          command, *rest = args
+          if command == "lb":
+              archive = rest[0]
+              listing = subprocess.run(
+                  ["lsar", "-j", archive], check=True, capture_output=True, text=True
+              )
+              data = json.loads(listing.stdout)
+              entries = data.get("lsarContents", [])
+              names = []
+              for entry in entries:
+                  name = (
+                      entry.get("XADFileName")
+                      or entry.get("XADFileNameString")
+                      or entry.get("XADPath")
+                  )
+                  if name:
+                      names.append(name)
+              if not names:
+                  raise SystemExit("lsar returned no archive member names")
+              print("\\n".join(names))
+          elif command == "x":
+              archive = next((item for item in rest if item.lower().endswith(".rar")), None)
+              destination = next((item for item in rest if item.endswith("/")), None)
+              if archive is None or destination is None:
+                  raise SystemExit("unrar x shim could not locate archive and destination")
+              subprocess.run(
+                  ["unar", "-f", "-D", "-o", destination.rstrip("/"), archive],
+                  check=True,
+              )
+          else:
+              raise SystemExit(f"unsupported unrar compatibility command: {command}")
+          PY
+          sudo chmod +x /usr/local/bin/unrar
+          unrar --help || true
       - name: Check runner disk capacity
         run: df -h /
       - name: Install dataset dependencies
