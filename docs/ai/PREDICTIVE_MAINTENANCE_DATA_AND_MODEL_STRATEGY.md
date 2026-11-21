@@ -318,3 +318,8 @@ The CI suite uses mocked standardized-dataset fixtures; it does not download or 
 For CWRU, a recording can contain DE, FE and base channels while the seeded defect is located at only one bearing position. The MineOS adapter must not copy a recording-level fault label onto a sensor mounted at the opposite bearing. DE-channel experiments retain only DE-bearing faults, FE-channel experiments retain only FE-bearing faults, and the base-plate channel may retain either position. The selected fault-location filter and excluded signal count are written into source provenance. This is a dataset-label integrity requirement, not an optional model-tuning choice.
 
 The hosted research benchmark downloads/builds CWRU only in an ephemeral runner, trains separate sample-rate/channel cohorts, validates ONNX Runtime CPU label parity, and retains metrics/model cards/source manifests only. Raw recordings are not uploaded as CI artifacts or committed to Git. Dataset licence terms remain separate from the MIT-licensed adapter/library code.
+
+
+### CPU model comparison and physical window consistency
+
+The bearing research pilot includes a grouped comparison of Logistic Regression, Extra Trees, Random Forest and RBF SVM. Candidate models must use identical StratifiedGroupKFold partitions and be compared using per-class precision, recall and F1, not accuracy alone. For the CWRU sample-rate experiments, use approximately equal physical windows (2048 samples at 12 kHz and 8192 samples at 48 kHz, approximately 0.171 seconds each). The 12 kHz fault-only task and 48 kHz four-class task remain different label sets and their scores must not be compared as if they were one task. Model selection remains a research decision; no candidate is automatically promoted.
