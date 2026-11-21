@@ -9,6 +9,7 @@ from pathlib import Path
 from .comparison import compare_models
 from .dataset import load_dataset
 from .library_dataset import load_standardized_dataset
+from .rul import compare_rul_models, load_xjtu_rul_dataset
 from .train import train_and_save
 
 
@@ -53,6 +54,15 @@ def build_parser() -> argparse.ArgumentParser:
     compare.add_argument("--stride", type=int, default=2048)
     compare.add_argument("--cv-folds", type=int, default=5)
     compare.add_argument("--random-state", type=int, default=42)
+
+    rul = subparsers.add_parser(
+        "train-rul-library",
+        help="benchmark XJTU-SY run-to-failure RUL models with bearing/condition holdouts",
+    )
+    rul.add_argument("--data-root", type=Path, required=True)
+    rul.add_argument("--out-dir", type=Path, required=True)
+    rul.add_argument("--bearing-folds", type=int, default=5)
+    rul.add_argument("--condition-folds", type=int, default=3)
     return parser
 
 
@@ -132,6 +142,54 @@ def main() -> None:
             print(json.dumps({
                 name: {"accuracy": result["accuracy"], "macro_f1": result["macro_f1"]}
                 for name, result in comparison["models"].items()
+            }, indent=2))
+        elif args.command == "train-rul-library":
+            args.out_dir.mkdir(parents=True, exist_ok=True)
+            bundle, manifest_path, source_metadata = load_xjtu_rul_dataset(
+                root=args.data_root,
+                manifest_output=args.out_dir / "source_manifest.csv",
+            )
+            metrics = compare_rul_models(
+                bundle,
+                bearing_folds=args.bearing_folds,
+                condition_folds=args.condition_folds,
+            )
+            metrics["source"] = source_metadata
+            metrics_path = args.out_dir / "metrics.json"
+            metrics_path.write_text(
+                json.dumps(metrics, indent=2, sort_keys=True), encoding="utf-8"
+            )
+            model_card = [
+                "# MineOS XJTU-SY RUL research benchmark",
+                "",
+                "- Status: research-only; not approved for mine-site deployment",
+                "- Task: remaining useful life regression, target in minutes",
+                "- Grouping: complete run_id (bearing) and complete operating-condition holdouts",
+                "- Inputs: horizontal and vertical vibration features plus known speed/load metadata",
+                "- The terminal failure description is provenance only and is not a model input",
+                "- Raw recordings are not committed or uploaded as workflow artifacts",
+                "- Dataset licence is unspecified; commercial and redistribution rights are unconfirmed",
+                "",
+                "See metrics.json for group-aware MAE/RMSE/R² and per-bearing errors.",
+            ]
+            (args.out_dir / "model_card.md").write_text(
+                "\\n".join(model_card) + "\\n", encoding="utf-8"
+            )
+            print(json.dumps({
+                "task": metrics["task"],
+                "snapshots": metrics["n_snapshots"],
+                "bearings": metrics["n_bearings"],
+                "conditions": metrics["n_operating_conditions"],
+                "bearing_holdout": {
+                    name: result["mae_minutes"]
+                    for name, result in metrics["bearing_holdout"]["models"].items()
+                },
+                "condition_holdout": {
+                    name: result["mae_minutes"]
+                    for name, result in metrics["condition_holdout"]["models"].items()
+                },
+                "metrics": str(metrics_path),
+                "source_manifest": str(manifest_path),
             }, indent=2))
     except (FileNotFoundError, ValueError, RuntimeError, OSError) as exc:
         parser.exit(2, f"error: {exc}\n")
