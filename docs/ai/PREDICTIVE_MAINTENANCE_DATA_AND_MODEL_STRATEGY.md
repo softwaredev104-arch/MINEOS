@@ -291,3 +291,23 @@ The first task is **bearing fault classification** (normal, inner race, rolling 
 The pilot uses synthetic MATLAB recordings in its automated tests so the code path can be verified without redistributing external data. It uses StratifiedGroupKFold over manifest-provided group IDs and fails when fewer than two independent groups per class are available. Its validation claim is only as strong as the supplied grouping; filename-level groups do not establish unseen-bearing generalization.
 
 No customer connector, real-site dataset, production inference endpoint, RUL model or operational recommendation workflow is implemented by this pilot. The code, evaluation report and ONNX artifact remain research outputs until the model-specific MineOS release gates and customer/domain approvals are met.
+
+
+## 15. Reproducible bearing dataset acquisition bridge
+
+The fixed-plant bearing pilot now supports the MIT-licensed [BearingDatasets](https://github.com/VictorBauler/BearingDatasets) project as an optional dataset acquisition and standardized Parquet layer. Reuse this maintained loader rather than implementing another general-purpose downloader or Parquet format. Its MIT licence covers the library code only; each underlying dataset retains its own terms.
+
+For CWRU, the upstream metadata explicitly labels the data licence as unspecified. Treat commercial use and redistribution as unconfirmed until the source owner confirms the terms. Do not put raw datasets, derived customer data or trained artifacts in Git.
+
+The MineOS adapter selects one channel and one sample-rate cohort, reads signals one at a time, creates the existing deterministic feature windows, writes a local source manifest, and records the upstream dataset manifest hash and citation in metrics. CWRU DE 12 kHz and 48 kHz runs must be trained separately. Fault recordings are grouped by the upstream `bearing_id`; this reflects the upstream builder's stated assumption that the same damaged bearing was used across loads, not source-confirmed physical traceability. Healthy records are grouped by recording ID.
+
+Install and build locally:
+
+```bash
+python -m pip install -e '.[datasets]'
+bearing-datasets build cwru --root /data/bearing-datasets
+mineos-bearing-baseline train-library --data-root /data/bearing-datasets --dataset cwru --channel DE --sample-rate 12000 --out-dir artifacts/cwru-de-12k
+mineos-bearing-baseline train-library --data-root /data/bearing-datasets --dataset cwru --channel DE --sample-rate 48000 --out-dir artifacts/cwru-de-48k
+```
+
+The CI suite uses mocked standardized-dataset fixtures; it does not download or claim real CWRU metrics. Real-data evaluation remains pending a locally built, rights-cleared dataset. See the pilot README for detailed setup and grouping limitations.
