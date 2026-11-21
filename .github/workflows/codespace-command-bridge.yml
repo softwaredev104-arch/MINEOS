@@ -1,0 +1,31 @@
+name: MineOS Codespace command bridge
+
+on:
+  push:
+    branches:
+      - feat/fixed-plant-bearing-baseline
+    paths:
+      - ".agent-bridge/request.json"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mineos-codespace-command-bridge
+  cancel-in-progress: false
+
+jobs:
+  execute:
+    # This job only runs on the user's explicitly registered Codespace runner.
+    # It is never used for pull_request events.
+    runs-on: [self-hosted, linux, x64, mineos-codespace]
+    timeout-minutes: 45
+    steps:
+      - name: Check out the exact request commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Execute allow-listed Codespace operation
+        run: python .agent-bridge/dispatch.py --request .agent-bridge/request.json
