@@ -102,7 +102,7 @@ python -m pip install -e '.[datasets]'
 bearing-datasets build cwru --root /data/bearing-datasets
 ```
 
-Then train separate cohorts. CWRU's normal (healthy) recordings are available only at 48 kHz; 12 kHz is a fault-only cohort. The 12 kHz run therefore evaluates three-way fault-type classification (inner race / ball / outer race), while the 48 kHz run is the four-class experiment (normal / inner race / ball / outer race). Never mix sample rates or compare the two scores as if they were the same task:
+Then train separate cohorts. CWRU's normal (healthy) recordings are available only at 48 kHz; 12 kHz is a fault-only cohort. The 12 kHz run therefore evaluates three-way fault-type classification (inner race / ball / outer race), while the 48 kHz run is the four-class experiment (normal / inner race / ball / outer race). Never mix sample rates or compare the two scores as if they were the same task. The automated benchmark uses 2048 samples at 12 kHz and 8192 samples at 48 kHz so both windows represent approximately 0.171 seconds of physical signal.
 
 ```bash
 mineos-bearing-baseline train-library \
