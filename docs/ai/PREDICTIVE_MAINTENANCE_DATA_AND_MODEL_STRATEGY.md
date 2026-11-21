@@ -311,3 +311,10 @@ mineos-bearing-baseline train-library --data-root /data/bearing-datasets --datas
 ```
 
 The CI suite uses mocked standardized-dataset fixtures; it does not download or claim real CWRU metrics. Real-data evaluation remains pending a locally built, rights-cleared dataset. See the pilot README for detailed setup and grouping limitations.
+
+
+### CWRU channel/defect-position label integrity
+
+For CWRU, a recording can contain DE, FE and base channels while the seeded defect is located at only one bearing position. The MineOS adapter must not copy a recording-level fault label onto a sensor mounted at the opposite bearing. DE-channel experiments retain only DE-bearing faults, FE-channel experiments retain only FE-bearing faults, and the base-plate channel may retain either position. The selected fault-location filter and excluded signal count are written into source provenance. This is a dataset-label integrity requirement, not an optional model-tuning choice.
+
+The hosted research benchmark downloads/builds CWRU only in an ephemeral runner, trains separate sample-rate/channel cohorts, validates ONNX Runtime CPU label parity, and retains metrics/model cards/source manifests only. Raw recordings are not uploaded as CI artifacts or committed to Git. Dataset licence terms remain separate from the MIT-licensed adapter/library code.
