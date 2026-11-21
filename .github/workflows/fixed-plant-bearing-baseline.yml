@@ -193,7 +193,7 @@ jobs:
                       names.append(name)
               if not names:
                   raise SystemExit("lsar returned no archive member names")
-              print("\\n".join(names))
+              print("\n".join(names))
           elif command == "x":
               archive = next((item for item in rest if item.lower().endswith(".rar")), None)
               destination = next((item for item in rest if item.endswith("/")), None)
