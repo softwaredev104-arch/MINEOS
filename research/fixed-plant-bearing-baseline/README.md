@@ -116,6 +116,15 @@ mineos-bearing-baseline train-library \
   --out-dir artifacts/cwru-de-48k
 ```
 
+Compare lightweight CPU candidates using identical group-aware folds:
+
+```bash
+mineos-bearing-baseline compare-library --data-root /data/bearing-datasets --dataset cwru --channel DE --sample-rate 12000 --window-size 2048 --stride 2048 --out-dir artifacts/cwru-de-12k
+mineos-bearing-baseline compare-library --data-root /data/bearing-datasets --dataset cwru --channel DE --sample-rate 48000 --window-size 8192 --stride 8192 --out-dir artifacts/cwru-de-48k
+```
+
+The comparison includes logistic regression, Extra Trees, Random Forest and RBF SVM. All candidates use the same StratifiedGroupKFold partitions; inspect class-wise precision/recall/F1 and group counts rather than selecting a model from accuracy alone. The comparison is a research shortlist, not an automatic promotion decision.
+
 The bridge reads one signal at a time, converts it into the existing deterministic feature windows, and writes a local source-manifest snapshot plus dataset/library provenance into the metrics. For CWRU DE and FE channels, it also filters fault labels by the bearing position actually measured: DE uses DE-bearing defects, FE uses non-drive-end defects, and the base-plate channel can retain either. This prevents a defect at one bearing from being mislabeled as a defect at the opposite sensor. The model card lists the actual classes present in each cohort; a fault-only run is not presented as a normal-versus-fault detector. Raw recordings and built dataset files remain outside Git. The upstream CWRU builder groups fault recordings by a bearing ID that assumes the same damaged bearing was used across loads; it explicitly notes that CWRU does not confirm this physical traceability. The model card therefore records this grouping caveat. Healthy recordings use recording-level groups.
 
 For validation, review the number of independent groups per class before interpreting metrics. If the grouped split cannot retain every class in each training fold, the pipeline must stop rather than silently falling back to random window splitting.
