@@ -1,0 +1,93 @@
+name: MineOS CWRU research benchmark
+
+on:
+  push:
+    branches:
+      - feat/fixed-plant-bearing-baseline
+    paths:
+      - 'research/fixed-plant-bearing-baseline/**'
+      - '.github/workflows/mineos-cwru-research-benchmark.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mineos-cwru-research-benchmark
+  cancel-in-progress: false
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: research/fixed-plant-bearing-baseline
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: research/fixed-plant-bearing-baseline/pyproject.toml
+      - name: Install benchmark dependencies
+        run: python -m pip install -e '.[datasets,onnx]'
+      - name: Build CWRU locally in the ephemeral runner
+        run: bearing-datasets build cwru --root /tmp/mineos-bearing-datasets
+      - name: Verify cohort labels before training
+        env:
+          BEARING_DATASETS_ROOT: /tmp/mineos-bearing-datasets
+        run: |
+          python - <<'PY'
+          import bearing_datasets as bd
+          ds = bd.open("cwru")
+          meta = ds.metadata()
+          de = meta[meta["channel"].astype(str).str.upper() == "DE"]
+          for rate in (12000, 48000):
+              cohort = de[de["fs"].astype(float) == rate]
+              print(f"{rate} Hz: {len(cohort)} recordings; labels={sorted(cohort['fault_type'].astype(str).unique())}")
+          healthy_rates = sorted(de.loc[de["fault_type"] == "normal", "fs"].astype(float).unique())
+          if healthy_rates != [48000.0]:
+              raise SystemExit(f"Unexpected CWRU healthy sample-rate coverage: {healthy_rates}")
+          PY
+      - name: Train 12 kHz fault-type classifier
+        run: |
+          mineos-bearing-baseline train-library \
+            --data-root /tmp/mineos-bearing-datasets \
+            --dataset cwru --channel DE --sample-rate 12000 \
+            --window-size 2048 --stride 2048 --cv-folds 5 \
+            --out-dir artifacts/cwru-de-12k --export-onnx
+      - name: Train 48 kHz four-class classifier
+        run: |
+          mineos-bearing-baseline train-library \
+            --data-root /tmp/mineos-bearing-datasets \
+            --dataset cwru --channel DE --sample-rate 48000 \
+            --window-size 2048 --stride 2048 --cv-folds 5 \
+            --out-dir artifacts/cwru-de-48k --export-onnx
+      - name: Publish benchmark summary
+        run: |
+          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          from pathlib import Path
+          print("| Cohort | Task labels | Windows | Groups | Folds | Accuracy | Macro F1 | ONNX parity |")
+          print("|---|---|---:|---:|---:|---:|---:|---|")
+          for name in ("cwru-de-12k", "cwru-de-48k"):
+              m = json.loads((Path("artifacts") / name / "metrics.json").read_text())
+              parity = m.get("onnx_export", {}).get("label_parity", False)
+              print(f"| {name} | {', '.join(m['labels'])} | {m['n_windows']} | {m['n_groups']} | {m['actual_folds']} | {m['accuracy']:.4f} | {m['macro_f1']:.4f} | {parity} |")
+          PY
+      - name: Upload metrics and model cards only (never raw recordings)
+        uses: actions/upload-artifact@v4
+        with:
+          name: mineos-cwru-research-results
+          retention-days: 14
+          if-no-files-found: error
+          path: |
+            research/fixed-plant-bearing-baseline/artifacts/cwru-de-12k/metrics.json
+            research/fixed-plant-bearing-baseline/artifacts/cwru-de-12k/feature_schema.json
+            research/fixed-plant-bearing-baseline/artifacts/cwru-de-12k/model_card.md
+            research/fixed-plant-bearing-baseline/artifacts/cwru-de-12k/source_manifest.csv
+            research/fixed-plant-bearing-baseline/artifacts/cwru-de-48k/metrics.json
+            research/fixed-plant-bearing-baseline/artifacts/cwru-de-48k/feature_schema.json
+            research/fixed-plant-bearing-baseline/artifacts/cwru-de-48k/model_card.md
+            research/fixed-plant-bearing-baseline/artifacts/cwru-de-48k/source_manifest.csv
