@@ -131,17 +131,37 @@ The bridge reads one signal at a time, converts it into the existing determinist
 
 For validation, review the number of independent groups per class before interpreting metrics. If the grouped split cannot retain every class in each training fold, the pipeline must stop rather than silently falling back to random window splitting.
 
-### Next distinct prognostics dataset
+### XJTU-SY run-to-failure RUL track
 
-For a later RUL experiment, the XJTU-SY authors publish 15 complete accelerated run-to-failure bearing trajectories, sampled at 25.6 kHz with two axes and one 1.28-second record every minute. The authors say it is publicly available for prognostics validation and request citation of their 2020 paper. The source page does not grant a commercial licence; treat commercial rights as unconfirmed. It is a separate RUL task and must not be mixed with the CWRU seeded-fault classifier.
+The separate RUL pipeline reuses the same BearingDatasets library for XJTU-SY. The source contains 15 complete accelerated run-to-failure trajectories (5 bearings under each of 3 operating conditions), with horizontal and vertical accelerometers at 25.6 kHz. Each one-minute snapshot contains 32,768 samples per axis (1.28 seconds). The standardized metadata provides `run_id`, `time_s` and `rul_s`; the loader pairs both axes per snapshot and converts RUL seconds to minutes. The final snapshot in each complete run has RUL = 0.
+
+The model inputs are both axes' vibration features plus known speed/load metadata. The terminal failure description is retained for provenance only, not as a model input. Validation is performed in two ways:
+- **Bearing holdout:** GroupKFold by complete `run_id` groups, so no snapshots from a held-out bearing appear in training.
+- **Operating-condition holdout:** GroupKFold by complete condition, testing generalization to a speed/load regime absent from training.
+
+The CPU model comparison includes Random Forest, Extra Trees, HistGradientBoosting and Ridge. It reports MAE/RMSE in minutes, R² and per-bearing MAE. It does not split snapshots randomly.
+
+The source archive is approximately 4.4 GB to download and 2.6 GB built. On Ubuntu, install the free libarchive extractor for the multi-volume RAR5 source:
+
+```bash
+python -m pip install -e '.[datasets]'
+sudo apt-get install -y libarchive-tools
+bearing-datasets --root /data/bearing-datasets build xjtu_sy
+mineos-bearing-baseline train-rul-library \
+  --data-root /data/bearing-datasets \
+  --out-dir artifacts/xjtu-sy-rul \
+  --bearing-folds 5 --condition-folds 3
+```
+
+The authors state the dataset is public for prognostics validation and request citation of their 2020 paper. The BearingDatasets metadata marks the data licence as unspecified; commercial use and redistribution rights are unconfirmed. The hosted workflow removes cached source archives after building and uploads only metrics, a model card and the source manifest—never raw vibration signals.
 
 ## Known constraints and next evaluation steps
 
 - Statistical/spectral features are intentionally small and deterministic; they are a baseline, not a complete vibration diagnostic system.
 - Sampling rate and source channel must be recorded accurately. Frequency features are expressed relative to Nyquist; the loader does not infer physical frequencies or RPM.
 - The current grouping guarantees only the grouping semantics provided in `manifest.csv`.
-- No failure horizon, natural degradation, maintenance label, causal explanation or RUL estimate is produced.
-- A future generalization experiment should add an independently sourced run-to-failure dataset (for example, FEMTO/PRONOSTIA or XJTU-SY) after its original data licence and citation have been checked.
+- The CWRU classifier does not produce RUL. The separate XJTU-SY track derives a research RUL estimate from complete run-to-failure trajectories; neither track supplies customer maintenance labels or causal explanations.
+- The XJTU-SY track is the first prognostics benchmark; additional independently sourced run-to-failure and field datasets (for example, FEMTO/PRONOSTIA or IMS) still require their own licence/citation review and separate validation.
 - Before any site pilot, agree data rights, asset mapping, sensor placement, operating envelope, maintenance verification, false-alert budget, lead-time expectations and human review with the customer.
 
 This package is not an OT connector and has no interfaces that write to PLC, SCADA, DCS or SIS systems.
