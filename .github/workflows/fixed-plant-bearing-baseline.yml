@@ -85,17 +85,17 @@ jobs:
             --out-dir artifacts/cwru-de-48k --export-onnx
       - name: Compare CPU models on 12 kHz cohort
         run: |
-          mineos-bearing-baseline compare-library \\
-            --data-root /tmp/mineos-bearing-datasets \\
-            --dataset cwru --channel DE --sample-rate 12000 \\
-            --window-size 2048 --stride 2048 --cv-folds 5 \\
+          mineos-bearing-baseline compare-library \
+            --data-root /tmp/mineos-bearing-datasets \
+            --dataset cwru --channel DE --sample-rate 12000 \
+            --window-size 2048 --stride 2048 --cv-folds 5 \
             --out-dir artifacts/cwru-de-12k
       - name: Compare CPU models on 48 kHz cohort
         run: |
-          mineos-bearing-baseline compare-library \\
-            --data-root /tmp/mineos-bearing-datasets \\
-            --dataset cwru --channel DE --sample-rate 48000 \\
-            --window-size 8192 --stride 8192 --cv-folds 5 \\
+          mineos-bearing-baseline compare-library \
+            --data-root /tmp/mineos-bearing-datasets \
+            --dataset cwru --channel DE --sample-rate 48000 \
+            --window-size 8192 --stride 8192 --cv-folds 5 \
             --out-dir artifacts/cwru-de-48k
       - name: Publish benchmark metrics
         run: |
@@ -114,13 +114,13 @@ jobs:
               print(f"- Groups per class: `{json.dumps(m['groups_per_label'], sort_keys=True)}`")
               comparison = json.loads((Path("artifacts") / name / "model_comparison.json").read_text())
               ranked = sorted(comparison["models"].items(), key=lambda item: item[1]["macro_f1"], reverse=True)
-              print(f"\\n### {name}: CPU model comparison (same grouped folds)")
+              print(f"\n### {name}: CPU model comparison (same grouped folds)")
               print("| Model | Accuracy | Macro F1 |")
               print("|---|---:|---:|")
               for model_name, scores in ranked:
                   print(f"| {model_name} | {scores['accuracy']:.4f} | {scores['macro_f1']:.4f} |")
               for model_name, scores in ranked:
-                  print(f"\\n#### {model_name}: per-class F1")
+                  print(f"\n#### {model_name}: per-class F1")
                   for label in comparison["labels"]:
                       class_scores = scores["classification_report"][label]
                       print(f"- {label}: precision={class_scores['precision']:.4f}, recall={class_scores['recall']:.4f}, F1={class_scores['f1-score']:.4f}")
