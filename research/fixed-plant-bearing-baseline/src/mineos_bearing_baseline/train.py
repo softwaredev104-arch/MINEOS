@@ -198,7 +198,8 @@ def train_and_save(
     model_card = f"""# MineOS bearing baseline model card
 
 - **Model:** StandardScaler + class-balanced LogisticRegression
-- **Task:** Bearing fault classification (normal / inner race / ball / outer race)
+- **Task:** Bearing fault classification
+- **Classes:** {", ".join(metrics["labels"])}
 - **Status:** Research only; not site validated and not approved for maintenance decisions
 - **Validation:** {metrics['validation']} ({metrics['actual_folds']} folds)
 - **Windows:** {metrics['n_windows']}
