@@ -101,3 +101,10 @@ See [Reusable Model Engineering and ONNX Standard](../ai/REUSABLE_MODEL_ENGINEER
 ## 12. Initial fixed-plant reference implementation
 
 The first fixed-plant reference pipeline is maintained in [research/fixed-plant-bearing-baseline](../../research/fixed-plant-bearing-baseline/README.md). It starts with vibration-based bearing fault classification and grouped validation. It is an engineering pilot only: it does not claim mine-site validity, future failure-risk forecasting or RUL estimation, and it does not connect to or write to operational control systems.
+
+
+## 13. Standardized rotating-equipment dataset ingestion
+
+The fixed-plant bearing reference package can optionally use the MIT-licensed BearingDatasets library for source-controlled dataset acquisition and standardized Parquet metadata/signals. The MineOS bridge records the upstream manifest hash, selected channel, sample rate and group assumptions. The library's code licence does not change the rights attached to CWRU or any other underlying dataset. Raw data remains outside Git and customer-controlled operational data remains in the customer's environment.
+
+Real CWRU training is still pending a locally built dataset and data-rights confirmation. Synthetic tests validate the adapter only; they are not evidence of field performance.
