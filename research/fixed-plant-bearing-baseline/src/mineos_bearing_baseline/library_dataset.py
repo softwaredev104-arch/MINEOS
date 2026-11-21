@@ -70,6 +70,15 @@ def load_standardized_dataset(
         available = sorted(metadata["channel"].astype(str).unique().tolist())
         raise ValueError(f"No {channel.upper()} channel in {dataset_name}; available: {available}")
 
+    unsupported_labels = sorted(
+        set(selected["fault_type"].astype(str).str.strip().str.lower()) - set(FAULT_LABELS)
+    )
+    if unsupported_labels:
+        raise ValueError(
+            f"Unsupported fault_type values {unsupported_labels}; this baseline requires one of "
+            f"{sorted(FAULT_LABELS)}"
+        )
+
     rates = sorted({float(value) for value in selected["fs"].tolist()})
     if sample_rate_hz is not None:
         selected = selected[selected["fs"].astype(float) == float(sample_rate_hz)].copy()
