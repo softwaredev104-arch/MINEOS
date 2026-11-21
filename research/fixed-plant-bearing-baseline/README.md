@@ -12,7 +12,7 @@ Rotating equipment (motors, pumps, fans, gearboxes and crushers) often contains 
 
 ## Repository layout
 
-- `src/mineos_bearing_baseline/features.py` — deterministic time/spectral feature extraction.
+- `src/mineos_bearing_baseline/features.py` — 27 deterministic time-domain, normalized spectral and Hilbert-envelope features, including physical-Hz envelope bands.
 - `src/mineos_bearing_baseline/dataset.py` — explicit manifest and MATLAB `.mat` loader.
 - `src/mineos_bearing_baseline/train.py` — group-aware cross-validation, CPU baseline, model card and optional ONNX export/parity check.
 - `src/mineos_bearing_baseline/cli.py` — command-line entry point.
