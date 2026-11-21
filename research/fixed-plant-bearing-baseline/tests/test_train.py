@@ -54,7 +54,10 @@ def test_train_and_save_writes_research_artifacts(tmp_path):
         output_dir=output,
         manifest_path=manifest,
         requested_folds=3,
+        source_metadata={"dataset_name": "cwru", "channel": "DE"},
     )
+    assert metrics["source"]["dataset_name"] == "cwru"
+    assert "Source:** cwru" in (output / "model_card.md").read_text(encoding="utf-8")
     assert metrics["deployment_status"] == "research_only_not_site_validated"
     assert metrics["sample_rate_hz"] is None
     for name in ("model.joblib", "metrics.json", "feature_schema.json", "model_card.md"):
