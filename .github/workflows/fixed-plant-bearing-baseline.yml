@@ -83,6 +83,20 @@ jobs:
             --dataset cwru --channel DE --sample-rate 48000 \
             --window-size 2048 --stride 2048 --cv-folds 5 \
             --out-dir artifacts/cwru-de-48k --export-onnx
+      - name: Compare CPU models on 12 kHz cohort
+        run: |
+          mineos-bearing-baseline compare-library \\
+            --data-root /tmp/mineos-bearing-datasets \\
+            --dataset cwru --channel DE --sample-rate 12000 \\
+            --window-size 2048 --stride 2048 --cv-folds 5 \\
+            --out-dir artifacts/cwru-de-12k
+      - name: Compare CPU models on 48 kHz cohort
+        run: |
+          mineos-bearing-baseline compare-library \\
+            --data-root /tmp/mineos-bearing-datasets \\
+            --dataset cwru --channel DE --sample-rate 48000 \\
+            --window-size 8192 --stride 8192 --cv-folds 5 \\
+            --out-dir artifacts/cwru-de-48k
       - name: Publish benchmark metrics
         run: |
           python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
