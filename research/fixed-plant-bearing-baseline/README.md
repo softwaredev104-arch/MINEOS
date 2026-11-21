@@ -145,7 +145,7 @@ The source archive is approximately 4.4 GB to download and 2.6 GB built. On Ubun
 
 ```bash
 python -m pip install -e '.[datasets]'
-sudo apt-get install -y libarchive-tools
+sudo apt-get install -y unar
 bearing-datasets --root /data/bearing-datasets build xjtu_sy
 mineos-bearing-baseline train-rul-library \
   --data-root /data/bearing-datasets \
