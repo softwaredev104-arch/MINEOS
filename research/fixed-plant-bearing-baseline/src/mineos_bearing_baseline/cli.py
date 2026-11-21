@@ -6,6 +6,7 @@ import argparse
 import json
 from pathlib import Path
 
+from .comparison import compare_models
 from .dataset import load_dataset
 from .library_dataset import load_standardized_dataset
 from .train import train_and_save
@@ -38,6 +39,20 @@ def build_parser() -> argparse.ArgumentParser:
     library.add_argument("--cv-folds", type=int, default=5)
     library.add_argument("--random-state", type=int, default=42)
     library.add_argument("--export-onnx", action="store_true")
+
+    compare = subparsers.add_parser(
+        "compare-library",
+        help="compare CPU classifiers on identical group-aware validation folds",
+    )
+    compare.add_argument("--data-root", type=Path, required=True)
+    compare.add_argument("--dataset", default="cwru")
+    compare.add_argument("--channel", default="DE")
+    compare.add_argument("--sample-rate", type=float, required=True)
+    compare.add_argument("--out-dir", type=Path, required=True)
+    compare.add_argument("--window-size", type=int, default=2048)
+    compare.add_argument("--stride", type=int, default=2048)
+    compare.add_argument("--cv-folds", type=int, default=5)
+    compare.add_argument("--random-state", type=int, default=42)
     return parser
 
 
@@ -94,6 +109,29 @@ def main() -> None:
                 "macro_f1": metrics["macro_f1"],
                 "deployment_status": metrics["deployment_status"],
                 "source_manifest": str(manifest_path),
+            }, indent=2))
+        elif args.command == "compare-library":
+            dataset, manifest_path, source_metadata = load_standardized_dataset(
+                root=args.data_root,
+                dataset_name=args.dataset,
+                channel=args.channel,
+                sample_rate_hz=args.sample_rate,
+                window_size=args.window_size,
+                stride=args.stride,
+                manifest_output=args.out_dir / "comparison_source_manifest.csv",
+            )
+            comparison = compare_models(
+                dataset,
+                requested_folds=args.cv_folds,
+                random_state=args.random_state,
+            )
+            comparison["source"] = source_metadata
+            args.out_dir.mkdir(parents=True, exist_ok=True)
+            output = args.out_dir / "model_comparison.json"
+            output.write_text(json.dumps(comparison, indent=2, sort_keys=True), encoding="utf-8")
+            print(json.dumps({
+                name: {"accuracy": result["accuracy"], "macro_f1": result["macro_f1"]}
+                for name, result in comparison["models"].items()
             }, indent=2))
     except (FileNotFoundError, ValueError, RuntimeError, OSError) as exc:
         parser.exit(2, f"error: {exc}\n")
