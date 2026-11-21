@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 
 from .dataset import load_dataset
+from .library_dataset import load_standardized_dataset
 from .train import train_and_save
 
 
@@ -22,6 +23,21 @@ def build_parser() -> argparse.ArgumentParser:
     train.add_argument("--cv-folds", type=int, default=5)
     train.add_argument("--random-state", type=int, default=42)
     train.add_argument("--export-onnx", action="store_true")
+
+    library = subparsers.add_parser(
+        "train-library",
+        help="train from a dataset built by the optional bearing-datasets library",
+    )
+    library.add_argument("--data-root", type=Path, required=True, help="root configured for bearing-datasets")
+    library.add_argument("--dataset", default="cwru", help="built dataset name (default: cwru)")
+    library.add_argument("--channel", default="DE", help="exact channel from dataset metadata")
+    library.add_argument("--sample-rate", type=float, default=None, help="required when selected channel has multiple rates")
+    library.add_argument("--out-dir", type=Path, default=Path("artifacts/cwru-library-baseline"))
+    library.add_argument("--window-size", type=int, default=2048)
+    library.add_argument("--stride", type=int, default=2048)
+    library.add_argument("--cv-folds", type=int, default=5)
+    library.add_argument("--random-state", type=int, default=42)
+    library.add_argument("--export-onnx", action="store_true")
     return parser
 
 
@@ -48,5 +64,36 @@ def main() -> None:
                 "task", "actual_folds", "n_windows", "n_groups", "accuracy", "macro_f1",
                 "deployment_status"
             )}, indent=2))
+        elif args.command == "train-library":
+            dataset, manifest_path, source_metadata = load_standardized_dataset(
+                root=args.data_root,
+                dataset_name=args.dataset,
+                channel=args.channel,
+                sample_rate_hz=args.sample_rate,
+                window_size=args.window_size,
+                stride=args.stride,
+                manifest_output=args.out_dir / "source_manifest.csv",
+            )
+            metrics = train_and_save(
+                dataset,
+                output_dir=args.out_dir,
+                manifest_path=manifest_path,
+                requested_folds=args.cv_folds,
+                random_state=args.random_state,
+                make_onnx=args.export_onnx,
+                source_metadata=source_metadata,
+            )
+            print(json.dumps({
+                "task": metrics["task"],
+                "dataset": args.dataset,
+                "sample_rate_hz": metrics["sample_rate_hz"],
+                "actual_folds": metrics["actual_folds"],
+                "n_windows": metrics["n_windows"],
+                "n_groups": metrics["n_groups"],
+                "accuracy": metrics["accuracy"],
+                "macro_f1": metrics["macro_f1"],
+                "deployment_status": metrics["deployment_status"],
+                "source_manifest": str(manifest_path),
+            }, indent=2))
     except (FileNotFoundError, ValueError, RuntimeError, OSError) as exc:
         parser.exit(2, f"error: {exc}\n")
