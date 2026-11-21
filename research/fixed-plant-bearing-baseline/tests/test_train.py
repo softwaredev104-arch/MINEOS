@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 
 from mineos_bearing_baseline.dataset import DatasetBundle
+from mineos_bearing_baseline.features import FEATURE_NAMES
 from mineos_bearing_baseline.train import evaluate_grouped_cv
 
 
@@ -12,7 +13,7 @@ def _bundle():
         for group_index in range(4):
             group = f"{label}_{group_index}"
             for _ in range(5):
-                rows.append(rng.normal(loc=label_index * 2.5, scale=0.3, size=16))
+                rows.append(rng.normal(loc=label_index * 2.5, scale=0.3, size=len(FEATURE_NAMES)))
                 labels.append(label)
                 groups.append(group)
     return DatasetBundle(
@@ -33,7 +34,7 @@ def test_grouped_cv_returns_complete_oof_predictions():
 
 def test_group_validation_requires_multiple_groups_per_label():
     data = DatasetBundle(
-        X=np.zeros((4, 16), dtype=np.float32),
+        X=np.zeros((4, len(FEATURE_NAMES)), dtype=np.float32),
         y=np.asarray(["normal", "normal", "ball", "ball"]),
         groups=np.asarray(["n1", "n1", "b1", "b1"]),
         recording_ids=np.asarray(["n1", "n1", "b1", "b1"]),
