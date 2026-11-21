@@ -154,6 +154,7 @@ def train_and_save(
     requested_folds: int = 5,
     random_state: int = 42,
     make_onnx: bool = False,
+    source_metadata: dict | None = None,
 ) -> dict:
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
@@ -170,6 +171,8 @@ def train_and_save(
     metrics["feature_dtype"] = "float32"
     metrics["model"] = "StandardScaler + class-balanced LogisticRegression"
     metrics["random_state"] = random_state
+    if source_metadata:
+        metrics["source"] = source_metadata
     metrics["deployment_status"] = "research_only_not_site_validated"
 
     if make_onnx:
@@ -204,6 +207,7 @@ def train_and_save(
 - **Accuracy:** {metrics['accuracy']:.4f}
 - **Macro F1:** {metrics['macro_f1']:.4f}
 - **Manifest SHA-256:** {metrics['manifest_sha256']}
+- **Source:** {metrics.get('source', {}).get('dataset_name', 'manifest-based local files')}
 
 ## Intended use
 
