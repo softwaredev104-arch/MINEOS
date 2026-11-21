@@ -38,7 +38,7 @@ jobs:
 
   benchmark-cwru:
     # One-off supervised research run: the tagged push runs on GitHub's hosted CPU runner.
-    if: github.event_name == 'pull_request' && contains(github.event.pull_request.title, '[benchmark-cwru]')
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && contains(github.event.pull_request.title, '[benchmark-cwru]')) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[benchmark-cwru]'))
     runs-on: ubuntu-latest
     timeout-minutes: 90
     defaults:
@@ -146,7 +146,7 @@ jobs:
 
   benchmark-xjtu-rul:
     # Run the separate run-to-failure track only when explicitly tagged for review.
-    if: github.event_name == 'pull_request' && contains(github.event.pull_request.title, '[benchmark-xjtu-rul]')
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && contains(github.event.pull_request.title, '[benchmark-xjtu-rul]')) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[benchmark-xjtu-rul]'))
     runs-on: ubuntu-latest
     timeout-minutes: 120
     defaults:
