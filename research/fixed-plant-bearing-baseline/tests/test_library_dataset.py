@@ -1,5 +1,7 @@
+import json
 import sys
 import types
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -9,15 +11,19 @@ from mineos_bearing_baseline.library_dataset import load_standardized_dataset
 
 
 class FakeDataset:
-    def __init__(self, rows):
+    def __init__(self, rows, path):
         self._rows = rows
+        self.path = path
+        self.path.mkdir(parents=True, exist_ok=True)
+        (self.path / "manifest.json").write_text(json.dumps({"dataset": "cwru"}), encoding="utf-8")
 
     def metadata(self):
         return pd.DataFrame(self._rows)
 
     def signal(self, signal_id):
         t = np.arange(4096, dtype=np.float64)
-        return np.sin(2 * np.pi * (0.02 + (hash(signal_id) % 5) * 0.01) * t)
+        index = int(signal_id.split("/")[0].replace("rec", ""))
+        return np.sin(2 * np.pi * (0.02 + (index % 5) * 0.01) * t)
 
     def cite(self):
         return "Synthetic fixture only"
@@ -26,7 +32,7 @@ class FakeDataset:
 def _install_fake(monkeypatch, rows):
     fake = types.SimpleNamespace(
         __version__="test",
-        open=lambda name, root=None: FakeDataset(rows),
+        open=lambda name, root=None: FakeDataset(rows, Path(root) / name),
     )
     monkeypatch.setitem(sys.modules, "bearing_datasets", fake)
 
