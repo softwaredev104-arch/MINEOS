@@ -290,7 +290,7 @@ The first task is **bearing fault classification** (normal, inner race, rolling 
 
 The pilot uses synthetic MATLAB recordings in its automated tests so the code path can be verified without redistributing external data. It uses StratifiedGroupKFold over manifest-provided group IDs and fails when fewer than two independent groups per class are available. Its validation claim is only as strong as the supplied grouping; filename-level groups do not establish unseen-bearing generalization.
 
-No customer connector, real-site dataset, production inference endpoint, RUL model or operational recommendation workflow is implemented by this pilot. The code, evaluation report and ONNX artifact remain research outputs until the model-specific MineOS release gates and customer/domain approvals are met.
+This CWRU classifier pilot does not implement a customer connector, real-site model, production inference endpoint or operational recommendation workflow. A separate XJTU-SY run-to-failure RUL research track is now implemented below; it is a distinct task and is not evidence of mine-site predictive capability. All classifier and RUL artifacts remain research outputs until model-specific MineOS release gates and customer/domain approvals are met.
 
 
 ## 15. Reproducible bearing dataset acquisition bridge
@@ -310,7 +310,7 @@ mineos-bearing-baseline train-library --data-root /data/bearing-datasets --datas
 mineos-bearing-baseline train-library --data-root /data/bearing-datasets --dataset cwru --channel DE --sample-rate 48000 --out-dir artifacts/cwru-de-48k
 ```
 
-The CI suite uses mocked standardized-dataset fixtures; it does not download or claim real CWRU metrics. Real-data evaluation remains pending a locally built, rights-cleared dataset. See the pilot README for detailed setup and grouping limitations.
+The hosted CI workflow has now built CWRU in an ephemeral runner and completed two real-data cohorts, with sensor-position label filtering, grouped validation, four CPU model comparisons and ONNX parity checks. See [CWRU benchmark report](../../research/fixed-plant-bearing-baseline/results/CWRU_BENCHMARK_REPORT.md). The measured performance is weak and one model misses the inner-race class entirely; neither cohort is approved for deployment. CWRU's data licence remains unspecified, so commercial rights are unconfirmed. Synthetic tests continue to validate adapter behavior separately.
 
 
 ### CWRU channel/defect-position label integrity
