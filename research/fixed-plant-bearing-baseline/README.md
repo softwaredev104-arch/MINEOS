@@ -108,11 +108,13 @@ Then train separate cohorts. CWRU's normal (healthy) recordings are available on
 mineos-bearing-baseline train-library \
   --data-root /data/bearing-datasets \
   --dataset cwru --channel DE --sample-rate 12000 \
+  --window-size 2048 --stride 2048 \
   --out-dir artifacts/cwru-de-12k
 
 mineos-bearing-baseline train-library \
   --data-root /data/bearing-datasets \
   --dataset cwru --channel DE --sample-rate 48000 \
+  --window-size 8192 --stride 8192 \
   --out-dir artifacts/cwru-de-48k
 ```
 
