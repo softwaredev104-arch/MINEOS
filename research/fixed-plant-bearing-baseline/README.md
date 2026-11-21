@@ -90,6 +90,40 @@ The loader rejects malformed manifests and invalid signals. Cross-validation use
 
 The metrics are out-of-fold predictions across groups, not independent mine-site validation. The final fitted model is trained on all supplied rows after grouped evaluation.
 
+
+## Use the standardized open-source dataset builder
+
+Rather than maintaining another downloader/format converter, the pilot can use [VictorBauler/BearingDatasets](https://github.com/VictorBauler/BearingDatasets). Its **code** is MIT-licensed and it standardizes signal metadata/storage across CWRU and other bearing datasets. It does not redistribute datasets; every source keeps its own data terms. CWRU is explicitly marked as having an unspecified data licence in that project's dataset metadata, so do not assume commercial-use or redistribution rights. Confirm the current CWRU terms before using its recordings for commercial work.
+
+The CWRU source is approximately 0.69 GB to download and 0.16 GB in the standardized built format according to the upstream dataset register. Build it once into a local folder:
+
+```bash
+python -m pip install -e '.[datasets]'
+bearing-datasets build cwru --root /data/bearing-datasets
+```
+
+Then train separate cohorts. CWRU contains both 12 kHz and 48 kHz drive-end records; never mix them in one training run:
+
+```bash
+mineos-bearing-baseline train-library \
+  --data-root /data/bearing-datasets \
+  --dataset cwru --channel DE --sample-rate 12000 \
+  --out-dir artifacts/cwru-de-12k
+
+mineos-bearing-baseline train-library \
+  --data-root /data/bearing-datasets \
+  --dataset cwru --channel DE --sample-rate 48000 \
+  --out-dir artifacts/cwru-de-48k
+```
+
+The bridge reads one signal at a time, converts it into the existing deterministic feature windows, and writes a local source-manifest snapshot plus dataset/library provenance into the metrics. Raw recordings and built dataset files remain outside Git. The upstream CWRU builder groups fault recordings by a bearing ID that assumes the same damaged bearing was used across loads; it explicitly notes that CWRU does not confirm this physical traceability. The model card therefore records this grouping caveat. Healthy recordings use recording-level groups.
+
+For validation, review the number of independent groups per class before interpreting metrics. If the grouped split cannot retain every class in each training fold, the pipeline must stop rather than silently falling back to random window splitting.
+
+### Next distinct prognostics dataset
+
+For a later RUL experiment, the XJTU-SY authors publish 15 complete accelerated run-to-failure bearing trajectories, sampled at 25.6 kHz with two axes and one 1.28-second record every minute. The authors say it is publicly available for prognostics validation and request citation of their 2020 paper. The source page does not grant a commercial licence; treat commercial rights as unconfirmed. It is a separate RUL task and must not be mixed with the CWRU seeded-fault classifier.
+
 ## Known constraints and next evaluation steps
 
 - Statistical/spectral features are intentionally small and deterministic; they are a baseline, not a complete vibration diagnostic system.
