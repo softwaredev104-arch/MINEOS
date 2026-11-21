@@ -100,3 +100,8 @@ Next research work:
 4. Before any site trial, require sensor/asset metadata, field-confirmed maintenance labels, operating-condition coverage, false-alert budget and human review.
 
 No model from this benchmark is site-validated.
+
+
+## Reproducibility follow-up
+
+The comparison implementation and its tests are committed in this feature branch. Hosted CI run #91 passed the branch test suite on Python 3.10, 3.11 and 3.12 after the comparison module was added to the branch. The next tagged benchmark run re-executes the full CWRU download/build/train/compare workflow against the branch's own source tree.
