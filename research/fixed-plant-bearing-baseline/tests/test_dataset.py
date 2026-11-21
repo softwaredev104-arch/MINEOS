@@ -6,6 +6,7 @@ import pytest
 from scipy.io import savemat
 
 from mineos_bearing_baseline.dataset import load_dataset
+from mineos_bearing_baseline.features import FEATURE_NAMES
 
 
 def _write_recording(root: Path, name: str, label: str, group: str, frequency: float):
@@ -24,7 +25,7 @@ def test_manifest_loader_creates_windows_and_preserves_groups(tmp_path):
         writer.writeheader()
         writer.writerows(rows)
     data = load_dataset(tmp_path, window_size=2048, stride=2048)
-    assert data.X.shape == (16, 16)
+    assert data.X.shape == (16, len(FEATURE_NAMES))
     assert set(data.y) == {"normal", "inner_race"}
     assert len(set(data.groups)) == 4
     assert data.recording_ids.shape == data.y.shape
