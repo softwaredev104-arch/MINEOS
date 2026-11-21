@@ -88,12 +88,19 @@ jobs:
           python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
           import json
           from pathlib import Path
-          print("| Cohort | Classes | Windows | Groups | Folds | Accuracy | Macro F1 | ONNX parity |")
-          print("|---|---|---:|---:|---:|---:|---:|---|")
+          print("| Cohort | Classes | Windows | Groups | Folds | Accuracy | Macro F1 | ONNX parity | Excluded wrong-location faults |")
+          print("|---|---|---:|---:|---:|---:|---:|---|---:|")
           for name in ("cwru-de-12k", "cwru-de-48k"):
               m = json.loads((Path("artifacts") / name / "metrics.json").read_text())
               parity = m.get("onnx_export", {}).get("label_parity", False)
-              print(f"| {name} | {', '.join(m['labels'])} | {m['n_windows']} | {m['n_groups']} | {m['actual_folds']} | {m['accuracy']:.4f} | {m['macro_f1']:.4f} | {parity} |")
+              excluded = m.get("source", {}).get("excluded_nonmatching_fault_location_signals", 0)
+              print(f"| {name} | {', '.join(m['labels'])} | {m['n_windows']} | {m['n_groups']} | {m['actual_folds']} | {m['accuracy']:.4f} | {m['macro_f1']:.4f} | {parity} | {excluded} |")
+              print(f"\\n### {name}: per-class metrics")
+              for label in m["labels"]:
+                  scores = m["classification_report"][label]
+                  print(f"- {label}: precision={scores['precision']:.4f}, recall={scores['recall']:.4f}, F1={scores['f1-score']:.4f}")
+              print(f"- Groups per class: `{json.dumps(m['groups_per_label'], sort_keys=True)}`")
+              print(f"- Confusion matrix (label order {m['labels']}): `{json.dumps(m['confusion_matrix'])}`")
           PY
       - name: Upload metrics and model cards only
         uses: actions/upload-artifact@v4
