@@ -148,7 +148,7 @@ jobs:
     # Run the separate run-to-failure track only when explicitly tagged for review.
     if: github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && contains(github.event.pull_request.title, '[benchmark-xjtu-rul]')) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[benchmark-xjtu-rul]'))
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 180
     defaults:
       run:
         working-directory: research/fixed-plant-bearing-baseline
@@ -172,6 +172,31 @@ jobs:
         run: bearing-datasets info xjtu_sy
       - name: Download and build XJTU-SY in the ephemeral runner
         run: bearing-datasets --root /tmp/mineos-bearing-datasets build xjtu_sy
+      - name: Verify XJTU-SY run, condition, channel and timeline integrity
+        run: |
+          python - <<'PY'
+          import bearing_datasets as bd
+          import numpy as np
+          ds = bd.open("xjtu_sy", root="/tmp/mineos-bearing-datasets")
+          meta = ds.metadata()
+          assert set(meta["channel"].astype(str).str.lower()) == {"horizontal", "vertical"}
+          assert set(meta["fs"].astype(float)) == {25600.0}
+          runs = meta.groupby("run_id")
+          assert len(runs) == 15, f"Expected 15 bearing runs; found {len(runs)}"
+          conditions = meta.groupby("operating_condition")["run_id"].nunique()
+          assert len(conditions) == 3 and sorted(conditions.tolist()) == [5, 5, 5], conditions
+          pairs = meta.groupby("recording_id")["channel"].agg(lambda values: set(str(v).lower() for v in values))
+          assert len(pairs) > 0 and all(pair == {"horizontal", "vertical"} for pair in pairs)
+          for run_id, run in runs:
+              snapshots = run[["recording_id", "time_s", "rul_s"]].drop_duplicates().sort_values("time_s")
+              times = snapshots["time_s"].to_numpy(dtype=float)
+              rul = snapshots["rul_s"].to_numpy(dtype=float)
+              assert len(times) >= 2, f"{run_id}: too few snapshots"
+              assert np.allclose(np.diff(times), 60.0), f"{run_id}: non-minute snapshot spacing"
+              assert np.all(np.diff(rul) <= 0), f"{run_id}: RUL increases"
+              assert np.isclose(rul[-1], 0.0), f"{run_id}: terminal snapshot is not zero RUL"
+          print(f"validated {len(runs)} bearing runs, {len(conditions)} conditions, {len(pairs)} paired snapshots")
+          PY
       - name: Remove cached source archives after the build
         run: |
           rm -rf /tmp/mineos-bearing-datasets/_raw
