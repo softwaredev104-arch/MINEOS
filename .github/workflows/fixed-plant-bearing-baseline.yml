@@ -178,9 +178,9 @@ jobs:
           df -h /
       - name: Train and evaluate RUL models with bearing and condition holdouts
         run: |
-          mineos-bearing-baseline train-rul-library \\
-            --data-root /tmp/mineos-bearing-datasets \\
-            --out-dir artifacts/xjtu-sy-rul \\
+          mineos-bearing-baseline train-rul-library \
+            --data-root /tmp/mineos-bearing-datasets \
+            --out-dir artifacts/xjtu-sy-rul \
             --bearing-folds 5 --condition-folds 3
       - name: Publish RUL benchmark summary
         run: |
@@ -191,7 +191,7 @@ jobs:
           print(f"Snapshots: {metrics['n_snapshots']} | bearings: {metrics['n_bearings']} | conditions: {metrics['n_operating_conditions']}")
           for split_name in ("bearing_holdout", "condition_holdout"):
               split = metrics[split_name]
-              print(f"\\n### {split['validation']}")
+              print(f"\n### {split['validation']}")
               print("| Model | MAE (minutes) | RMSE (minutes) | R² | Mean per-bearing MAE |")
               print("|---|---:|---:|---:|---:|")
               ranked = sorted(split["models"].items(), key=lambda item: item[1]["mae_minutes"])
