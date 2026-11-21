@@ -143,7 +143,7 @@ def load_dataset(
         starts = range(0, signal.size - window_size + 1, stride)
         added = 0
         for start in starts:
-            feature_rows.append(extract_features(signal[start : start + window_size]))
+            feature_rows.append(extract_features(signal[start : start + window_size], sample_rate_hz=sample_rate_hz))
             labels.append(row["label"].strip().lower())
             groups.append(row["group_id"].strip())
             recording_ids.append(row["recording_id"].strip())
