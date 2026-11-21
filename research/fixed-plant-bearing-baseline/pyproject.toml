@@ -21,6 +21,7 @@ dependencies = [
 [project.optional-dependencies]
 onnx = ["skl2onnx>=1.16,<2", "onnxruntime>=1.17,<2"]
 test = ["pytest>=8,<9"]
+datasets = ["bearing-datasets>=0.2,<1"]
 
 [project.scripts]
 mineos-bearing-baseline = "mineos_bearing_baseline.cli:main"
