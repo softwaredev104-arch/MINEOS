@@ -323,3 +323,8 @@ The hosted research benchmark downloads/builds CWRU only in an ephemeral runner,
 ### CPU model comparison and physical window consistency
 
 The bearing research pilot includes a grouped comparison of Logistic Regression, Extra Trees, Random Forest and RBF SVM. Candidate models must use identical StratifiedGroupKFold partitions and be compared using per-class precision, recall and F1, not accuracy alone. For the CWRU sample-rate experiments, use approximately equal physical windows (2048 samples at 12 kHz and 8192 samples at 48 kHz, approximately 0.171 seconds each). The 12 kHz fault-only task and 48 kHz four-class task remain different label sets and their scores must not be compared as if they were one task. Model selection remains a research decision; no candidate is automatically promoted.
+
+
+### Envelope-spectrum feature experiment
+
+The bearing pilot's feature interface now includes Hilbert-envelope demodulation, envelope RMS/kurtosis, dominant/centroid envelope frequencies and physical-Hz envelope energy bands (0–50, 50–100, 100–200, 200–400, 400–800, 800–1600 and above 1600 Hz). The actual documented sample rate is passed into feature extraction and stored with window duration; it must never be inferred. These features are an experimental diagnostic baseline and must be evaluated with the same asset/group holdout rules as the original feature set.
