@@ -55,6 +55,7 @@ def _rows():
             "recording_id": f"rec{index}",
             "channel": "DE",
             "fault_type": label,
+            "fault_location": "none" if label == "normal" else "motor_bearing_de",
             "bearing_id": bearing,
             "fs": 12000,
         })
@@ -98,3 +99,31 @@ def test_standardized_bridge_rejects_unknown_fault_types(tmp_path, monkeypatch):
             root=tmp_path,
             manifest_output=tmp_path / "manifest.csv",
         )
+
+
+
+def test_cwru_de_channel_excludes_faults_on_fe_bearing(tmp_path, monkeypatch):
+    rows = _rows()
+    rows.append({
+        "signal_id": "rec8/DE",
+        "recording_id": "rec8",
+        "channel": "DE",
+        "fault_type": "inner",
+        "fault_location": "motor_bearing_nde",
+        "bearing_id": "FE_IR007",
+        "fs": 12000,
+    })
+    _install_fake(monkeypatch, rows)
+    bundle, manifest, source = load_standardized_dataset(
+        root=tmp_path,
+        channel="DE",
+        sample_rate_hz=12000,
+        manifest_output=tmp_path / "manifest.csv",
+        window_size=2048,
+        stride=2048,
+    )
+    assert bundle.X.shape == (16, 16)
+    assert "rec8" not in set(bundle.recording_ids)
+    assert source["fault_location_filter"] == "motor_bearing_de"
+    assert source["excluded_nonmatching_fault_location_signals"] == 1
+    assert len(pd.read_csv(manifest)) == 8
