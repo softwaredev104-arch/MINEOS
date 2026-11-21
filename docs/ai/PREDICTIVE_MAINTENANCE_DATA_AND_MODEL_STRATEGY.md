@@ -328,3 +328,12 @@ The bearing research pilot includes a grouped comparison of Logistic Regression,
 ### Envelope-spectrum feature experiment
 
 The bearing pilot's feature interface now includes Hilbert-envelope demodulation, envelope RMS/kurtosis, dominant/centroid envelope frequencies and physical-Hz envelope energy bands (0–50, 50–100, 100–200, 200–400, 400–800, 800–1600 and above 1600 Hz). The actual documented sample rate is passed into feature extraction and stored with window duration; it must never be inferred. These features are an experimental diagnostic baseline and must be evaluated with the same asset/group holdout rules as the original feature set.
+
+
+## XJTU-SY run-to-failure RUL track
+
+The XJTU-SY prognostics task is separate from CWRU seeded-fault classification. It contains 15 complete accelerated bearing runs across three operating conditions; each snapshot contains 32,768 samples per axis at 25.6 kHz (1.28 seconds), collected once per minute. The standardized metadata provides `run_id`, `time_s`, `rul_s`, speed, load, operating condition and terminal failure description.
+
+The loader pairs horizontal and vertical channels for each snapshot, computes the same sample-rate-aware vibration feature family per axis, adds known speed/load metadata, and converts `rul_s` to minutes. Terminal failure type is provenance only; it is not an input feature. Validation has two separate holdout views: complete `run_id` bearings and complete operating conditions. Models are compared using MAE/RMSE in minutes, R² and per-bearing MAE. Random snapshot splitting is prohibited.
+
+The XJTU-SY dataset metadata marks its licence as unspecified. The authors state it is publicly available for prognostics validation and request citation of the 2020 paper, but commercial-use and redistribution rights remain unconfirmed. The hosted workflow uses an ephemeral runner, deletes the cached source archives after building, and uploads only metrics, a model card and a source manifest. It never uploads raw vibration signals.
