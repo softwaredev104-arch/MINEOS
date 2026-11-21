@@ -102,7 +102,7 @@ python -m pip install -e '.[datasets]'
 bearing-datasets build cwru --root /data/bearing-datasets
 ```
 
-Then train separate cohorts. CWRU contains both 12 kHz and 48 kHz drive-end records; never mix them in one training run:
+Then train separate cohorts. CWRU's normal (healthy) recordings are available only at 48 kHz; 12 kHz is a fault-only cohort. The 12 kHz run therefore evaluates three-way fault-type classification (inner race / ball / outer race), while the 48 kHz run is the four-class experiment (normal / inner race / ball / outer race). Never mix sample rates or compare the two scores as if they were the same task:
 
 ```bash
 mineos-bearing-baseline train-library \
@@ -116,7 +116,7 @@ mineos-bearing-baseline train-library \
   --out-dir artifacts/cwru-de-48k
 ```
 
-The bridge reads one signal at a time, converts it into the existing deterministic feature windows, and writes a local source-manifest snapshot plus dataset/library provenance into the metrics. Raw recordings and built dataset files remain outside Git. The upstream CWRU builder groups fault recordings by a bearing ID that assumes the same damaged bearing was used across loads; it explicitly notes that CWRU does not confirm this physical traceability. The model card therefore records this grouping caveat. Healthy recordings use recording-level groups.
+The bridge reads one signal at a time, converts it into the existing deterministic feature windows, and writes a local source-manifest snapshot plus dataset/library provenance into the metrics. The model card lists the actual classes present in each cohort; a fault-only run is not presented as a normal-versus-fault detector. Raw recordings and built dataset files remain outside Git. The upstream CWRU builder groups fault recordings by a bearing ID that assumes the same damaged bearing was used across loads; it explicitly notes that CWRU does not confirm this physical traceability. The model card therefore records this grouping caveat. Healthy recordings use recording-level groups.
 
 For validation, review the number of independent groups per class before interpreting metrics. If the grouped split cannot retain every class in each training fold, the pipeline must stop rather than silently falling back to random window splitting.
 
