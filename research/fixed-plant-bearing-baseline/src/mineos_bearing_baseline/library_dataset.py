@@ -7,6 +7,8 @@ source retains its own terms; see the MineOS pilot README before building data.
 from __future__ import annotations
 
 import csv
+import hashlib
+import json
 from pathlib import Path
 
 import numpy as np
@@ -145,7 +147,13 @@ def load_standardized_dataset(
         writer.writeheader()
         writer.writerows(manifest_rows)
 
+    upstream_manifest = Path(ds.path) / "manifest.json"
+    upstream_manifest_sha256 = (
+        hashlib.sha256(upstream_manifest.read_bytes()).hexdigest()
+        if upstream_manifest.is_file() else None
+    )
     source_info = {
+        "upstream_manifest_sha256": upstream_manifest_sha256,
         "dataset_name": dataset_name,
         "dataset_citation": ds.cite() if hasattr(ds, "cite") else "Citation not supplied by loader",
         "dataset_library": "bearing-datasets",
