@@ -38,7 +38,7 @@ jobs:
 
   benchmark-cwru:
     # One-off supervised research run: the tagged push runs on GitHub's hosted CPU runner.
-    if: github.event_name == 'push' && contains(github.event.head_commit.message, '[benchmark-cwru]')
+    if: github.event_name == 'pull_request' && contains(github.event.pull_request.title, '[benchmark-cwru]')
     runs-on: ubuntu-latest
     timeout-minutes: 90
     defaults:
@@ -54,7 +54,7 @@ jobs:
       - name: Install dataset and ONNX dependencies
         run: python -m pip install -e '.[datasets,onnx]'
       - name: Download and build CWRU into the ephemeral runner
-        run: bearing-datasets build cwru --root /tmp/mineos-bearing-datasets
+        run: bearing-datasets --root /tmp/mineos-bearing-datasets build cwru
       - name: Verify sample-rate and label coverage
         run: |
           python - <<'PY'
