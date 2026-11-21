@@ -199,14 +199,26 @@ jobs:
               destination = next((item for item in rest if item.endswith("/")), None)
               if archive is None or destination is None:
                   raise SystemExit("unrar x shim could not locate archive and destination")
-              subprocess.run(
-                  ["unar", "-f", "-D", "-o", destination.rstrip("/"), archive],
-                  check=True,
+              result = subprocess.run(
+                  ["unar", "-f", "-o", destination.rstrip("/"), archive],
+                  capture_output=True,
+                  text=True,
               )
+              if result.stdout:
+                  print(result.stdout)
+              if result.stderr:
+                  print(result.stderr, file=sys.stderr)
+              if result.returncode:
+                  raise SystemExit(result.returncode)
           else:
               raise SystemExit(f"unsupported unrar compatibility command: {command}")
           PY
           sudo chmod +x /usr/local/bin/unrar
+          command -v unrar
+          python - <<'PY'
+          import shutil
+          assert shutil.which("unrar"), "RAR5 compatibility extractor is not on PATH"
+          PY
           unrar --help || true
       - name: Check runner disk capacity
         run: df -h /
