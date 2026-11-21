@@ -59,6 +59,8 @@ def load_standardized_dataset(
     ds = bd.open(dataset_name, root=root_path)
     metadata = ds.metadata()
     required = {"signal_id", "recording_id", "channel", "fault_type", "fs"}
+    if dataset_name.lower() == "cwru" and channel.upper() in {"DE", "FE"}:
+        required.add("fault_location")
     missing = required - set(metadata.columns)
     if missing:
         raise ValueError(f"Standardized dataset is missing metadata columns: {sorted(missing)}")
@@ -81,6 +83,27 @@ def load_standardized_dataset(
                 f"Dataset has multiple sample rates {rates}; choose one with --sample-rate"
             )
         sample_rate_hz = rates[0]
+
+    # A CWRU recording may contain both DE and FE sensor channels while the seeded
+    # defect exists at only one bearing position. Never transfer that fault label to
+    # the opposite bearing sensor. The base-plate channel can observe either position.
+    excluded_nonmatching_fault_location_signals = 0
+    fault_location_filter = "all fault locations"
+    if dataset_name.lower() == "cwru" and channel.upper() in {"DE", "FE"}:
+        expected_location = {
+            "DE": "motor_bearing_de",
+            "FE": "motor_bearing_nde",
+        }[channel.upper()]
+        is_fault = selected["fault_type"].astype(str).str.lower() != "normal"
+        matches_sensor = selected["fault_location"].astype(str).str.lower() == expected_location
+        keep = ~is_fault | matches_sensor
+        excluded_nonmatching_fault_location_signals = int((~keep).sum())
+        selected = selected[keep].copy()
+        fault_location_filter = expected_location
+        if selected.empty:
+            raise ValueError(
+                f"No {channel.upper()} signals remain after matching faults to {expected_location}"
+            )
 
     selected_rates = sorted({float(value) for value in selected["fs"].tolist()})
     if len(selected_rates) != 1:
@@ -128,6 +151,7 @@ def load_standardized_dataset(
                 "signal_id": signal_id,
                 "channel": channel.upper(),
                 "label": label,
+                "fault_location": str(row.get("fault_location", "unknown")),
                 "sample_rate_hz": f"{cohort_rate:g}",
                 "group_id": group_id,
                 "bearing_id_source": bearing_id,
@@ -159,6 +183,9 @@ def load_standardized_dataset(
         "dataset_library_version": getattr(bd, "__version__", "unknown"),
         "channel": channel.upper(),
         "sample_rate_hz": cohort_rate,
+        "fault_location_filter": fault_location_filter,
+        "excluded_nonmatching_fault_location_signals": excluded_nonmatching_fault_location_signals,
+        "selected_signal_count": int(len(selected)),
         "grouping": (
             "faults grouped by upstream bearing_id; healthy records grouped by recording_id"
         ),
