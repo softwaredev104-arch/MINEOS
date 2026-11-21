@@ -34,7 +34,10 @@ MineOS is an intelligence and integration layer—not a replacement for PLC, SCA
 
 ### AI and governance
 - [MineOS AI architecture](docs/architecture/MINEOS_AI_ARCHITECTURE.md)
+- [Reusable model engineering and ONNX standard](docs/ai/REUSABLE_MODEL_ENGINEERING_AND_ONNX_STANDARD.md)
 - [Predictive maintenance data and model strategy](docs/ai/PREDICTIVE_MAINTENANCE_DATA_AND_MODEL_STRATEGY.md)
+- [Fixed-plant bearing baseline research pilot](research/fixed-plant-bearing-baseline/README.md)
+- [Fixed-plant bearing baseline research pilot](research/fixed-plant-bearing-baseline/README.md)
 - [Safety, security and AI governance](docs/governance/SAFETY_SECURITY_AI_GOVERNANCE.md)
 
 ### Engineering and decisions

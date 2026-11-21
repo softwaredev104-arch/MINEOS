@@ -1,0 +1,291 @@
+name: Fixed-plant bearing baseline tests
+
+on:
+  push:
+    paths:
+      - 'research/fixed-plant-bearing-baseline/**'
+      - '.github/workflows/fixed-plant-bearing-baseline.yml'
+  pull_request:
+    paths:
+      - 'research/fixed-plant-bearing-baseline/**'
+      - '.github/workflows/fixed-plant-bearing-baseline.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
+    defaults:
+      run:
+        working-directory: research/fixed-plant-bearing-baseline
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: research/fixed-plant-bearing-baseline/pyproject.toml
+      - name: Install package and test dependencies
+        run: python -m pip install -e '.[test]'
+      - name: Run tests
+        run: python -m pytest -ra
+
+  benchmark-cwru:
+    # One-off supervised research run: the tagged push runs on GitHub's hosted CPU runner.
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && contains(github.event.pull_request.title, '[benchmark-cwru]')) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[benchmark-cwru]'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: research/fixed-plant-bearing-baseline
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: research/fixed-plant-bearing-baseline/pyproject.toml
+      - name: Install dataset and ONNX dependencies
+        run: python -m pip install -e '.[datasets,onnx]'
+      - name: Download and build CWRU into the ephemeral runner
+        run: bearing-datasets --root /tmp/mineos-bearing-datasets build cwru
+      - name: Verify sample-rate and label coverage
+        run: |
+          python - <<'PY'
+          import bearing_datasets as bd
+          ds = bd.open("cwru", root="/tmp/mineos-bearing-datasets")
+          meta = ds.metadata()
+          de = meta[meta["channel"].astype(str).str.upper() == "DE"]
+          for rate in (12000, 48000):
+              cohort = de[de["fs"].astype(float) == rate]
+              print(f"{rate} Hz: {len(cohort)} recordings; labels={sorted(cohort['fault_type'].astype(str).unique())}")
+          healthy_rates = sorted(de.loc[de["fault_type"] == "normal", "fs"].astype(float).unique())
+          if healthy_rates != [48000.0]:
+              raise SystemExit(f"Unexpected CWRU healthy sample-rate coverage: {healthy_rates}")
+          PY
+      - name: Train 12 kHz three-class fault classifier
+        run: |
+          mineos-bearing-baseline train-library \
+            --data-root /tmp/mineos-bearing-datasets \
+            --dataset cwru --channel DE --sample-rate 12000 \
+            --window-size 2048 --stride 2048 --cv-folds 5 \
+            --out-dir artifacts/cwru-de-12k --export-onnx
+      - name: Train 48 kHz four-class classifier
+        run: |
+          mineos-bearing-baseline train-library \
+            --data-root /tmp/mineos-bearing-datasets \
+            --dataset cwru --channel DE --sample-rate 48000 \
+            --window-size 8192 --stride 8192 --cv-folds 5 \
+            --out-dir artifacts/cwru-de-48k --export-onnx
+      - name: Compare CPU models on 12 kHz cohort
+        run: |
+          mineos-bearing-baseline compare-library \
+            --data-root /tmp/mineos-bearing-datasets \
+            --dataset cwru --channel DE --sample-rate 12000 \
+            --window-size 2048 --stride 2048 --cv-folds 5 \
+            --out-dir artifacts/cwru-de-12k
+      - name: Compare CPU models on 48 kHz cohort
+        run: |
+          mineos-bearing-baseline compare-library \
+            --data-root /tmp/mineos-bearing-datasets \
+            --dataset cwru --channel DE --sample-rate 48000 \
+            --window-size 8192 --stride 8192 --cv-folds 5 \
+            --out-dir artifacts/cwru-de-48k
+      - name: Publish benchmark metrics
+        run: |
+          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          from pathlib import Path
+          print("| Cohort | Classes | Windows | Groups | Folds | Accuracy | Macro F1 | ONNX parity | Excluded wrong-location faults |")
+          print("|---|---|---:|---:|---:|---:|---:|---|---:|")
+          for name in ("cwru-de-12k", "cwru-de-48k"):
+              m = json.loads((Path("artifacts") / name / "metrics.json").read_text())
+              parity = m.get("onnx_export", {}).get("label_parity", False)
+              excluded = m.get("source", {}).get("excluded_nonmatching_fault_location_signals", 0)
+              duration = m.get("source", {}).get("window_duration_seconds", 0)
+              print(f"| {name} | {', '.join(m['labels'])} | {m['n_windows']} | {m['n_groups']} | {m['actual_folds']} | {m['accuracy']:.4f} | {m['macro_f1']:.4f} | {parity} | {excluded} |")
+              print(f"- Window duration: {duration:.4f} seconds")
+              print(f"- Groups per class: `{json.dumps(m['groups_per_label'], sort_keys=True)}`")
+              comparison = json.loads((Path("artifacts") / name / "model_comparison.json").read_text())
+              ranked = sorted(comparison["models"].items(), key=lambda item: item[1]["macro_f1"], reverse=True)
+              print(f"\n### {name}: CPU model comparison (same grouped folds)")
+              print("| Model | Accuracy | Macro F1 |")
+              print("|---|---:|---:|")
+              for model_name, scores in ranked:
+                  print(f"| {model_name} | {scores['accuracy']:.4f} | {scores['macro_f1']:.4f} |")
+              for model_name, scores in ranked:
+                  print(f"\n#### {model_name}: per-class F1")
+                  for label in comparison["labels"]:
+                      class_scores = scores["classification_report"][label]
+                      print(f"- {label}: precision={class_scores['precision']:.4f}, recall={class_scores['recall']:.4f}, F1={class_scores['f1-score']:.4f}")
+          PY
+      - name: Upload metrics and model cards only
+        uses: actions/upload-artifact@v4
+        with:
+          name: mineos-cwru-research-results
+          retention-days: 14
+          if-no-files-found: error
+          path: |
+            research/fixed-plant-bearing-baseline/artifacts/cwru-de-12k/metrics.json
+            research/fixed-plant-bearing-baseline/artifacts/cwru-de-12k/feature_schema.json
+            research/fixed-plant-bearing-baseline/artifacts/cwru-de-12k/model_card.md
+            research/fixed-plant-bearing-baseline/artifacts/cwru-de-12k/source_manifest.csv
+            research/fixed-plant-bearing-baseline/artifacts/cwru-de-12k/model_comparison.json
+            research/fixed-plant-bearing-baseline/artifacts/cwru-de-48k/metrics.json
+            research/fixed-plant-bearing-baseline/artifacts/cwru-de-48k/feature_schema.json
+            research/fixed-plant-bearing-baseline/artifacts/cwru-de-48k/model_card.md
+            research/fixed-plant-bearing-baseline/artifacts/cwru-de-48k/source_manifest.csv
+            research/fixed-plant-bearing-baseline/artifacts/cwru-de-48k/model_comparison.json
+
+
+  benchmark-xjtu-rul:
+    # Run the separate run-to-failure track only when explicitly tagged for review.
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && contains(github.event.pull_request.title, '[benchmark-xjtu-rul]')) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[benchmark-xjtu-rul]'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    defaults:
+      run:
+        working-directory: research/fixed-plant-bearing-baseline
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: research/fixed-plant-bearing-baseline/pyproject.toml
+      - name: Install LGPL Unarchiver for multi-volume RAR5 source files
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y unar
+          unar -v
+          lsar -v
+          sudo tee /usr/local/bin/unrar >/dev/null <<'PY'
+          #!/usr/bin/env python3
+          import json
+          import subprocess
+          import sys
+
+          args = sys.argv[1:]
+          if not args:
+              raise SystemExit("unrar compatibility shim requires a command")
+          command, *rest = args
+          if command == "lb":
+              archive = rest[0]
+              listing = subprocess.run(
+                  ["lsar", "-j", archive], check=True, capture_output=True, text=True
+              )
+              data = json.loads(listing.stdout)
+              entries = data.get("lsarContents", [])
+              names = []
+              for entry in entries:
+                  name = (
+                      entry.get("XADFileName")
+                      or entry.get("XADFileNameString")
+                      or entry.get("XADPath")
+                  )
+                  if name:
+                      names.append(name)
+              if not names:
+                  raise SystemExit("lsar returned no archive member names")
+              print("\n".join(names))
+          elif command == "x":
+              archive = next((item for item in rest if item.lower().endswith(".rar")), None)
+              destination = next((item for item in rest if item.endswith("/")), None)
+              if archive is None or destination is None:
+                  raise SystemExit("unrar x shim could not locate archive and destination")
+              result = subprocess.run(
+                  ["unar", "-f", "-o", destination.rstrip("/"), archive],
+                  capture_output=True,
+                  text=True,
+              )
+              if result.stdout:
+                  print(result.stdout)
+              if result.stderr:
+                  print(result.stderr, file=sys.stderr)
+              if result.returncode:
+                  raise SystemExit(result.returncode)
+          else:
+              raise SystemExit(f"unsupported unrar compatibility command: {command}")
+          PY
+          sudo chmod +x /usr/local/bin/unrar
+          command -v unrar
+          python - <<'PY'
+          import shutil
+          assert shutil.which("unrar"), "RAR5 compatibility extractor is not on PATH"
+          PY
+          unrar --help || true
+      - name: Check runner disk capacity
+        run: df -h /
+      - name: Install dataset dependencies
+        run: python -m pip install -e '.[datasets]'
+      - name: Show XJTU-SY source and licence metadata
+        run: bearing-datasets info xjtu_sy
+      - name: Download and build XJTU-SY in the ephemeral runner
+        run: bearing-datasets --root /tmp/mineos-bearing-datasets build xjtu_sy
+      - name: Verify XJTU-SY run, condition, channel and timeline integrity
+        run: |
+          python - <<'PY'
+          import bearing_datasets as bd
+          import numpy as np
+          ds = bd.open("xjtu_sy", root="/tmp/mineos-bearing-datasets")
+          meta = ds.metadata()
+          assert set(meta["channel"].astype(str).str.lower()) == {"horizontal", "vertical"}
+          assert set(meta["fs"].astype(float)) == {25600.0}
+          runs = meta.groupby("run_id")
+          assert len(runs) == 15, f"Expected 15 bearing runs; found {len(runs)}"
+          conditions = meta.groupby("operating_condition")["run_id"].nunique()
+          assert len(conditions) == 3 and sorted(conditions.tolist()) == [5, 5, 5], conditions
+          pairs = meta.groupby("recording_id")["channel"].agg(lambda values: set(str(v).lower() for v in values))
+          assert len(pairs) > 0 and all(pair == {"horizontal", "vertical"} for pair in pairs)
+          for run_id, run in runs:
+              snapshots = run[["recording_id", "time_s", "rul_s"]].drop_duplicates().sort_values("time_s")
+              times = snapshots["time_s"].to_numpy(dtype=float)
+              rul = snapshots["rul_s"].to_numpy(dtype=float)
+              assert len(times) >= 2, f"{run_id}: too few snapshots"
+              assert np.allclose(np.diff(times), 60.0), f"{run_id}: non-minute snapshot spacing"
+              assert np.all(np.diff(rul) <= 0), f"{run_id}: RUL increases"
+              assert np.isclose(rul[-1], 0.0), f"{run_id}: terminal snapshot is not zero RUL"
+          print(f"validated {len(runs)} bearing runs, {len(conditions)} conditions, {len(pairs)} paired snapshots")
+          PY
+      - name: Remove cached source archives after the build
+        run: |
+          rm -rf /tmp/mineos-bearing-datasets/_raw
+          df -h /
+      - name: Train and evaluate RUL models with bearing and condition holdouts
+        run: |
+          mineos-bearing-baseline train-rul-library \
+            --data-root /tmp/mineos-bearing-datasets \
+            --out-dir artifacts/xjtu-sy-rul \
+            --bearing-folds 5 --condition-folds 3
+      - name: Publish RUL benchmark summary
+        run: |
+          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          from pathlib import Path
+          metrics = json.loads(Path("artifacts/xjtu-sy-rul/metrics.json").read_text())
+          print(f"Snapshots: {metrics['n_snapshots']} | bearings: {metrics['n_bearings']} | conditions: {metrics['n_operating_conditions']}")
+          for split_name in ("bearing_holdout", "condition_holdout"):
+              split = metrics[split_name]
+              print(f"\n### {split['validation']}")
+              print("| Model | MAE (minutes) | RMSE (minutes) | R² | Mean per-bearing MAE |")
+              print("|---|---:|---:|---:|---:|")
+              ranked = sorted(split["models"].items(), key=lambda item: item[1]["mae_minutes"])
+              for name, result in ranked:
+                  print(f"| {name} | {result['mae_minutes']:.3f} | {result['rmse_minutes']:.3f} | {result['r2']:.4f} | {result['mean_per_bearing_mae_minutes']:.3f} |")
+          PY
+      - name: Upload RUL metrics and model card only (never raw vibration data)
+        uses: actions/upload-artifact@v4
+        with:
+          name: mineos-xjtu-sy-rul-results
+          retention-days: 14
+          if-no-files-found: error
+          path: |
+            research/fixed-plant-bearing-baseline/artifacts/xjtu-sy-rul/metrics.json
+            research/fixed-plant-bearing-baseline/artifacts/xjtu-sy-rul/model_card.md
+            research/fixed-plant-bearing-baseline/artifacts/xjtu-sy-rul/source_manifest.csv

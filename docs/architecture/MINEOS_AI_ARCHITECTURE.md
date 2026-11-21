@@ -90,3 +90,21 @@ Optimization and reinforcement learning are research capabilities. Initial exper
 - Require human review for consequential maintenance recommendations; the model does not approve or perform maintenance.
 
 The detailed dataset, feature, maintenance-event, evaluation and model-promotion requirements are maintained in the PDM strategy document.
+
+## 11. Reusable model engineering and ONNX
+
+MineOS adopts a reuse-first, CPU-first model-engineering lifecycle with versioned datasets, feature contracts, baseline-first model selection, leakage-aware evaluation, immutable artifacts, and governed promotion. ONNX is the preferred interchange path only when the selected model can be exported without behavioral loss and passes runtime parity checks; it is not a requirement for every algorithm or a training framework.
+
+See [Reusable Model Engineering and ONNX Standard](../ai/REUSABLE_MODEL_ENGINEERING_AND_ONNX_STANDARD.md) for candidate open-source tooling, licence review, model/feature versioning, ONNX export gates, CPU benchmarking, tenant isolation, model lifecycle and the per-model release checklist. Apply it together with the PDM strategy and connector/governance requirements; it does not supersede those domain-specific controls.
+
+
+## 12. Initial fixed-plant reference implementation
+
+The fixed-plant bearing research package is maintained in [research/fixed-plant-bearing-baseline](../../research/fixed-plant-bearing-baseline/README.md). It now contains two separate tasks: (1) CWRU seeded-fault bearing classification, evaluated on 12 kHz and 48 kHz cohorts; and (2) XJTU-SY run-to-failure RUL regression, evaluated with complete-bearing and complete-operating-condition holdouts. Both are public laboratory research benchmarks only. Neither claims mine-site validity, and neither connects to or writes to operational control systems. See the [CWRU benchmark report](../../research/fixed-plant-bearing-baseline/results/CWRU_BENCHMARK_REPORT.md) for classification outcomes; the XJTU-SY RUL report is produced by the hosted benchmark workflow.
+
+
+## 13. Standardized rotating-equipment dataset ingestion
+
+The fixed-plant bearing reference package can optionally use the MIT-licensed BearingDatasets library for source-controlled dataset acquisition and standardized Parquet metadata/signals. The MineOS bridge records the upstream manifest hash, selected channel, sample rate and group assumptions. The library's code licence does not change the rights attached to CWRU or any other underlying dataset. Raw data remains outside Git and customer-controlled operational data remains in the customer's environment.
+
+CWRU training and model comparison have been run against the public laboratory recordings in an ephemeral CI runner. The results are weak and are not approved for maintenance decisions. XJTU-SY RUL evaluation is separately automated; its underlying data licence is unspecified, so commercial and redistribution rights remain unconfirmed. The adapters also have synthetic unit tests, which validate code paths rather than field performance.

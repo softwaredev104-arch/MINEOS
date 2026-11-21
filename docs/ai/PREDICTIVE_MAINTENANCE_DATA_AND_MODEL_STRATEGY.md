@@ -281,3 +281,59 @@ Do not emit a precise failure date unless the model and evidence support that le
 - No RUL output where there is insufficient degradation history, failure/censoring evidence or a valid operating envelope.
 - No shared-model training on customer data without explicit authorization.
 - No automatic work-order creation or maintenance execution without a separately approved workflow and customer permissions.
+
+## 14. Initial fixed-plant bearing reference pilot
+
+A research-only reference implementation now exists at [research/fixed-plant-bearing-baseline](../../research/fixed-plant-bearing-baseline/README.md). It provides a MATLAB vibration loader, deterministic time/spectral features, a class-balanced logistic-regression baseline, grouped cross-validation, model-card/metrics output and optional ONNX export with ONNX Runtime CPU label-parity checking.
+
+The first task is **bearing fault classification** (normal, inner race, rolling element/ball and outer race), not failure-risk forecasting or remaining-useful-life estimation. The initial public source under evaluation is the CWRU Bearing Data Center. Its files are not included in the repository; the official download page does not state a dataset licence, so verify current terms and obtain permission where necessary before commercial use or redistribution. The source describes laboratory recordings with seeded defects and 12 kHz / 48 kHz acquisition rates. These data are useful for an initial diagnostic pipeline exercise but do not validate MineOS for mine-site operating conditions.
+
+The pilot uses synthetic MATLAB recordings in its automated tests so the code path can be verified without redistributing external data. It uses StratifiedGroupKFold over manifest-provided group IDs and fails when fewer than two independent groups per class are available. Its validation claim is only as strong as the supplied grouping; filename-level groups do not establish unseen-bearing generalization.
+
+This CWRU classifier pilot does not implement a customer connector, real-site model, production inference endpoint or operational recommendation workflow. A separate XJTU-SY run-to-failure RUL research track is now implemented below; it is a distinct task and is not evidence of mine-site predictive capability. All classifier and RUL artifacts remain research outputs until model-specific MineOS release gates and customer/domain approvals are met.
+
+
+## 15. Reproducible bearing dataset acquisition bridge
+
+The fixed-plant bearing pilot now supports the MIT-licensed [BearingDatasets](https://github.com/VictorBauler/BearingDatasets) project as an optional dataset acquisition and standardized Parquet layer. Reuse this maintained loader rather than implementing another general-purpose downloader or Parquet format. Its MIT licence covers the library code only; each underlying dataset retains its own terms.
+
+For CWRU, the upstream metadata explicitly labels the data licence as unspecified. Treat commercial use and redistribution as unconfirmed until the source owner confirms the terms. Do not put raw datasets, derived customer data or trained artifacts in Git.
+
+The MineOS adapter selects one channel and one sample-rate cohort, reads signals one at a time, creates the existing deterministic feature windows, writes a local source manifest, and records the upstream dataset manifest hash and citation in metrics. CWRU DE 12 kHz and 48 kHz runs must be trained separately. Fault recordings are grouped by the upstream `bearing_id`; this reflects the upstream builder's stated assumption that the same damaged bearing was used across loads, not source-confirmed physical traceability. Healthy records are grouped by recording ID.
+
+Install and build locally:
+
+```bash
+python -m pip install -e '.[datasets]'
+bearing-datasets build cwru --root /data/bearing-datasets
+mineos-bearing-baseline train-library --data-root /data/bearing-datasets --dataset cwru --channel DE --sample-rate 12000 --out-dir artifacts/cwru-de-12k
+mineos-bearing-baseline train-library --data-root /data/bearing-datasets --dataset cwru --channel DE --sample-rate 48000 --out-dir artifacts/cwru-de-48k
+```
+
+The hosted CI workflow has now built CWRU in an ephemeral runner and completed two real-data cohorts, with sensor-position label filtering, grouped validation, four CPU model comparisons and ONNX parity checks. See [CWRU benchmark report](../../research/fixed-plant-bearing-baseline/results/CWRU_BENCHMARK_REPORT.md). The measured performance is weak and one model misses the inner-race class entirely; neither cohort is approved for deployment. CWRU's data licence remains unspecified, so commercial rights are unconfirmed. Synthetic tests continue to validate adapter behavior separately.
+
+
+### CWRU channel/defect-position label integrity
+
+For CWRU, a recording can contain DE, FE and base channels while the seeded defect is located at only one bearing position. The MineOS adapter must not copy a recording-level fault label onto a sensor mounted at the opposite bearing. DE-channel experiments retain only DE-bearing faults, FE-channel experiments retain only FE-bearing faults, and the base-plate channel may retain either position. The selected fault-location filter and excluded signal count are written into source provenance. This is a dataset-label integrity requirement, not an optional model-tuning choice.
+
+The hosted research benchmark downloads/builds CWRU only in an ephemeral runner, trains separate sample-rate/channel cohorts, validates ONNX Runtime CPU label parity, and retains metrics/model cards/source manifests only. Raw recordings are not uploaded as CI artifacts or committed to Git. Dataset licence terms remain separate from the MIT-licensed adapter/library code.
+
+
+### CPU model comparison and physical window consistency
+
+The bearing research pilot includes a grouped comparison of Logistic Regression, Extra Trees, Random Forest and RBF SVM. Candidate models must use identical StratifiedGroupKFold partitions and be compared using per-class precision, recall and F1, not accuracy alone. For the CWRU sample-rate experiments, use approximately equal physical windows (2048 samples at 12 kHz and 8192 samples at 48 kHz, approximately 0.171 seconds each). The 12 kHz fault-only task and 48 kHz four-class task remain different label sets and their scores must not be compared as if they were one task. Model selection remains a research decision; no candidate is automatically promoted.
+
+
+### Envelope-spectrum feature experiment
+
+The bearing pilot's feature interface now includes Hilbert-envelope demodulation, envelope RMS/kurtosis, dominant/centroid envelope frequencies and physical-Hz envelope energy bands (0–50, 50–100, 100–200, 200–400, 400–800, 800–1600 and above 1600 Hz). The actual documented sample rate is passed into feature extraction and stored with window duration; it must never be inferred. These features are an experimental diagnostic baseline and must be evaluated with the same asset/group holdout rules as the original feature set.
+
+
+## XJTU-SY run-to-failure RUL track
+
+The XJTU-SY prognostics task is separate from CWRU seeded-fault classification. It contains 15 complete accelerated bearing runs across three operating conditions; each snapshot contains 32,768 samples per axis at 25.6 kHz (1.28 seconds), collected once per minute. The standardized metadata provides `run_id`, `time_s`, `rul_s`, speed, load, operating condition and terminal failure description.
+
+The loader pairs horizontal and vertical channels for each snapshot, computes the same sample-rate-aware vibration feature family per axis, adds known speed/load metadata, and converts `rul_s` to minutes. Terminal failure type is provenance only; it is not an input feature. Validation has two separate holdout views: complete `run_id` bearings and complete operating conditions. Models are compared using MAE/RMSE in minutes, R² and per-bearing MAE. Random snapshot splitting is prohibited.
+
+The XJTU-SY dataset metadata marks its licence as unspecified. The authors state it is publicly available for prognostics validation and request citation of the 2020 paper, but commercial-use and redistribution rights remain unconfirmed. The hosted workflow uses an ephemeral runner, deletes the cached source archives after building, and uploads only metrics, a model card and a source manifest. It never uploads raw vibration signals.
