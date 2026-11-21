@@ -104,4 +104,4 @@ No model from this benchmark is site-validated.
 
 ## Reproducibility follow-up
 
-The comparison implementation and its tests are committed in this feature branch. Hosted CI run #91 passed the branch test suite on Python 3.10, 3.11 and 3.12 after the comparison module was added to the branch. The next tagged benchmark run re-executes the full CWRU download/build/train/compare workflow against the branch's own source tree.
+The comparison implementation and its tests are committed in this feature branch. Hosted CI run #91 passed the branch test suite on Python 3.10, 3.11 and 3.12 after the comparison module was added to the branch. The branch-local reproducibility run has now completed successfully as [GitHub Actions run #95](https://github.com/softwaredev104-arch/MINEOS/actions/runs/44874123258), using commit `a1ad35ba97ecf70264ef21cd0dd9d374a2dac9c5` after `main` was restored to its original base. The full CWRU download/build/train/compare workflow passed again and reproduced the same metrics. The Python 3.10, 3.11 and 3.12 test jobs also passed in run #95.
