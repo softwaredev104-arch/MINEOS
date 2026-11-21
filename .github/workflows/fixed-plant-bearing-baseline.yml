@@ -81,7 +81,7 @@ jobs:
           mineos-bearing-baseline train-library \
             --data-root /tmp/mineos-bearing-datasets \
             --dataset cwru --channel DE --sample-rate 48000 \
-            --window-size 2048 --stride 2048 --cv-folds 5 \
+            --window-size 8192 --stride 8192 --cv-folds 5 \
             --out-dir artifacts/cwru-de-48k --export-onnx
       - name: Compare CPU models on 12 kHz cohort
         run: |
